@@ -1,0 +1,233 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  OWNER
+  USER
+  ADMIN
+}
+
+enum AssetKind {
+  CERT_PDF
+  IMAGE
+  FONT
+  CODE_BUNDLE
+  OTHER
+}
+
+enum LayoutStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model User {
+  id           String      @id @default(uuid()) @db.Uuid
+  email        String      @unique
+  passwordHash String      @map("password_hash")
+  name         String
+  role         UserRole    @default(OWNER)
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  profiles   Profile[]
+  fileAssets FileAsset[]
+
+  @@map("users")
+}
+
+model Profile {
+  id            String   @id @default(uuid()) @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  slug          String   @unique
+  isPrimary     Boolean  @default(false) @map("is_primary")
+  defaultLocale String   @default("es") @map("default_locale")
+  localizedInfo Json     @default("{}") @map("localized_info")
+  socialLinks   Json     @default("{}") @map("social_links")
+  themeConfig   Json     @default("{}") @map("theme_config")
+  avatarAssetId String?  @unique @map("avatar_asset_id") @db.Uuid
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  avatarAsset     FileAsset?       @relation("ProfileAvatar", fields: [avatarAssetId], references: [id], onDelete: SetNull)
+  experiences     Experience[]
+  educations      Education[]
+  projects        Project[]
+  skills          Skill[]
+  certifications  Certification[]
+  pageLayouts     PageLayout[]
+  contactMessages ContactMessage[]
+
+  @@index([userId])
+  @@map("profiles")
+}
+
+model Experience {
+  id             String    @id @default(uuid()) @db.Uuid
+  profileId      String    @map("profile_id") @db.Uuid
+  company        String
+  location       String?
+  roleI18n       Json      @map("role_i18n")
+  summaryI18n    Json      @map("summary_i18n")
+  highlightsI18n Json      @default("{}") @map("highlights_i18n")
+  tags           String[]  @default([])
+  startDate      DateTime  @map("start_date") @db.Date
+  endDate        DateTime? @map("end_date") @db.Date
+  isCurrent      Boolean   @default(false) @map("is_current")
+  sortOrder      Int       @default(0) @map("sort_order")
+  isVisible      Boolean   @default(true) @map("is_visible")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId, sortOrder])
+  @@map("experiences")
+}
+
+model Education {
+  id          String    @id @default(uuid()) @db.Uuid
+  profileId   String    @map("profile_id") @db.Uuid
+  institution String
+  location    String?
+  degreeI18n  Json      @map("degree_i18n")
+  summaryI18n Json      @default("{}") @map("summary_i18n")
+  startDate   DateTime  @map("start_date") @db.Date
+  endDate     DateTime? @map("end_date") @db.Date
+  isCurrent   Boolean   @default(false) @map("is_current")
+  sortOrder   Int       @default(0) @map("sort_order")
+  isVisible   Boolean   @default(true) @map("is_visible")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId, sortOrder])
+  @@map("educations")
+}
+
+model Project {
+  id           String     @id @default(uuid()) @db.Uuid
+  profileId    String     @map("profile_id") @db.Uuid
+  titleI18n    Json       @map("title_i18n")
+  summaryI18n  Json       @map("summary_i18n")
+  tags         String[]   @default([])
+  demoUrl      String?    @map("demo_url")
+  repoUrl      String?    @map("repo_url")
+  coverAssetId String?    @unique @map("cover_asset_id") @db.Uuid
+  year         Int?
+  isFeatured   Boolean    @default(false) @map("is_featured")
+  sortOrder    Int        @default(0) @map("sort_order")
+  isVisible    Boolean    @default(true) @map("is_visible")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  profile    Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  coverAsset FileAsset? @relation("ProjectCover", fields: [coverAssetId], references: [id], onDelete: SetNull)
+
+  @@index([profileId, sortOrder])
+  @@map("projects")
+}
+
+model Skill {
+  id        String   @id @default(uuid()) @db.Uuid
+  profileId String   @map("profile_id") @db.Uuid
+  name      String
+  category  String
+  level     Int      @default(80)
+  years     Float?
+  sortOrder Int      @default(0) @map("sort_order")
+  isVisible Boolean  @default(true) @map("is_visible")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId, category, sortOrder])
+  @@map("skills")
+}
+
+model Certification {
+  id            String    @id @default(uuid()) @db.Uuid
+  profileId     String    @map("profile_id") @db.Uuid
+  fileAssetId   String?   @unique @map("file_asset_id") @db.Uuid
+  titleI18n     Json      @map("title_i18n")
+  issuer        String
+  issueDate     DateTime  @map("issue_date") @db.Date
+  expiryDate    DateTime? @map("expiry_date") @db.Date
+  category      String
+  credentialId  String?   @map("credential_id")
+  verifyUrl     String?   @map("verify_url")
+  skills        String[]  @default([])
+  allowDownload Boolean   @default(true) @map("allow_download")
+  sortOrder     Int       @default(0) @map("sort_order")
+  isVisible     Boolean   @default(true) @map("is_visible")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  profile   Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  fileAsset FileAsset? @relation(fields: [fileAssetId], references: [id], onDelete: SetNull)
+
+  @@index([profileId, category, sortOrder])
+  @@map("certifications")
+}
+
+model FileAsset {
+  id           String    @id @default(uuid()) @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
+  storageKey   String    @unique @map("storage_key")
+  originalName String    @map("original_name")
+  mimeType     String    @map("mime_type")
+  sizeBytes    Int       @map("size_bytes")
+  sha256       String
+  kind         AssetKind @default(CERT_PDF)
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  certification Certification?
+  profileAvatar Profile?       @relation("ProfileAvatar")
+  projectCover  Project?       @relation("ProjectCover")
+
+  @@index([userId])
+  @@map("file_assets")
+}
+
+model PageLayout {
+  id           String       @id @default(uuid()) @db.Uuid
+  profileId    String       @map("profile_id") @db.Uuid
+  status       LayoutStatus @default(DRAFT)
+  version      Int          @default(1)
+  canvasSchema Json         @map("canvas_schema")
+  publishedAt  DateTime?    @map("published_at")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId, status])
+  @@map("page_layouts")
+}
+
+model ContactMessage {
+  id          String   @id @default(uuid()) @db.Uuid
+  profileId   String   @map("profile_id") @db.Uuid
+  senderName  String   @map("sender_name")
+  senderEmail String   @map("sender_email")
+  company     String?
+  subject     String
+  message     String   @db.Text
+  isRead      Boolean  @default(false) @map("is_read")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId, isRead, createdAt])
+  @@map("contact_messages")
+}

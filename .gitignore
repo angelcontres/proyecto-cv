@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Next.js
+.next/
+out/
+next-env.d.ts
+
+# Environment & Secrets
+.env
+.env.local
+.env.*.local
+
+# Uploaded files & runtime storage
+storage/
+
+# Testing & Coverage
+coverage/
+playwright-report/
+test-results/
+
+# OS & Editors
+.DS_Store
+Thumbs.db
+*.log

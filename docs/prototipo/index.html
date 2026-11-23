@@ -1,0 +1,2620 @@
+<!DOCTYPE html>
+<html lang="es" data-accent="amaterasu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CV Studio · Obsidian Edition (Prototipo Completo)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,400&family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --paper: #000000;
+      --paper-raised: #0a0a0a;
+      --paper-soft: #121212;
+      --ink: #cdc4ba;
+      --ink-dim: #b0a9a0;
+      --ink-muted: #958f87;
+      --ink-faint: #6f6962;
+      --line: rgba(205, 196, 186, 0.22);
+      --line-soft: rgba(205, 196, 186, 0.11);
+      --line-strong: rgba(205, 196, 186, 0.44);
+      --tint5: rgba(205, 196, 186, 0.05);
+      --tint10: rgba(205, 196, 186, 0.11);
+      --bone: #cdc4ba;
+      --ink-on-bone: #000000;
+      --sun: #ce5e32;
+      --sun-glow: rgba(206, 94, 50, 0.16);
+      --radius: 2px;
+      --f-display: "Fraunces", Georgia, ui-serif, serif;
+      --f-sans: "Space Grotesk", system-ui, -apple-system, sans-serif;
+      --f-mono: "Space Mono", ui-monospace, SFMono-Regular, monospace;
+      --ease-out: cubic-bezier(0.215, 0.61, 0.355, 1);
+      --snap: 90ms;
+      --move: 180ms;
+    }
+
+    html[data-accent="void"] {
+      --paper: #05110a; --paper-raised: #0a1911; --paper-soft: #102419;
+      --ink: #c1cac4; --ink-dim: #a6afaa; --ink-muted: #8d9590; --ink-faint: #67706b;
+      --bone: #c1cac4; --ink-on-bone: #05110a; --sun: #6daf8c; --sun-glow: rgba(109, 175, 140, 0.16);
+      --line: rgba(193,202,196,0.22); --line-soft: rgba(193,202,196,0.11); --line-strong: rgba(193,202,196,0.44);
+    }
+    html[data-accent="cobalt"] {
+      --paper: #030f19; --paper-raised: #081824; --paper-soft: #0e2435;
+      --ink: #bfc9d1; --ink-dim: #a5aeb5; --ink-muted: #8b949b; --ink-faint: #687179;
+      --bone: #bfc9d1; --ink-on-bone: #030f19; --sun: #6ea5cf; --sun-glow: rgba(110, 165, 207, 0.17);
+      --line: rgba(191,201,209,0.22); --line-soft: rgba(191,201,209,0.11); --line-strong: rgba(191,201,209,0.44);
+    }
+    html[data-accent="indigo"] {
+      --paper: #0b0c1b; --paper-raised: #131527; --paper-soft: #1b1e38;
+      --ink: #c4c6d2; --ink-dim: #aaacb6; --ink-muted: #90929d; --ink-faint: #6d6f7c;
+      --bone: #c4c6d2; --ink-on-bone: #0b0c1b; --sun: #9299d3; --sun-glow: rgba(146, 153, 211, 0.18);
+      --line: rgba(196,198,210,0.22); --line-soft: rgba(196,198,210,0.11); --line-strong: rgba(196,198,210,0.44);
+    }
+
+    body.light {
+      --paper: #f3efe9; --paper-raised: #faf8f4; --paper-soft: #e8e1d6;
+      --ink: #171513; --ink-dim: #3d3833; --ink-muted: #655e57; --ink-faint: #8a8177;
+      --line: rgba(23, 21, 19, 0.2); --line-soft: rgba(23, 21, 19, 0.09); --line-strong: rgba(23, 21, 19, 0.38);
+      --tint5: rgba(23, 21, 19, 0.04); --tint10: rgba(23, 21, 19, 0.08);
+      --bone: #171513; --ink-on-bone: #f3efe9;
+      --sun-glow: rgba(206, 94, 50, 0.1);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--f-sans);
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    .grain-overlay {
+      position: fixed; inset: 0; pointer-events: none; z-index: 95; opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    button, input, textarea, select { font: inherit; color: inherit; }
+    a { color: inherit; text-decoration: none; }
+    .mono { font-family: var(--f-mono); }
+    .serif { font-family: var(--f-display); }
+    .muted { color: var(--ink-muted); }
+    .dim { color: var(--ink-dim); }
+    .faint { color: var(--ink-faint); }
+    .hidden { display: none !important; }
+    .row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+
+    /* ==================== TOP SHELL HEADER ==================== */
+    .hdr {
+      position: sticky; top: 0; z-index: 60; height: 56px;
+      background: color-mix(in srgb, var(--paper) 90%, transparent);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+    }
+    .hdr-in {
+      height: 100%;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: minmax(max-content, 1fr) auto minmax(max-content, 1fr);
+      align-items: center;
+      gap: 14px;
+    }
+    .logo { display: inline-flex; align-items: center; gap: 10px; font-weight: 500; font-size: 0.92rem; }
+    .hdr-nav { display: flex; justify-content: center; gap: 1.5rem; }
+    .hdr-link {
+      background: none; border: 0; cursor: pointer;
+      color: var(--ink-dim); font-size: 0.65rem; font-weight: 500;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      padding: 0.4rem 0; position: relative; white-space: nowrap;
+    }
+    .hdr-link::after {
+      content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px;
+      background: var(--sun); transform: scaleX(0); transform-origin: left; transition: transform var(--move) var(--ease-out);
+    }
+    .hdr-link:hover, .hdr-link.active { color: var(--ink); }
+    .hdr-link:hover::after, .hdr-link.active::after { transform: scaleX(1); }
+    .hdr-right { display: flex; justify-self: end; align-items: center; gap: 8px; }
+
+    /* ==================== BUTTONS & INPUTS ==================== */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      background: transparent; border: 1px solid var(--line); border-radius: var(--radius);
+      color: var(--ink); cursor: pointer; font-size: 0.66rem; font-weight: 500;
+      letter-spacing: 0.13em; text-transform: uppercase; padding: 0.5rem 0.85rem;
+      transition: background var(--snap), border-color var(--snap), color var(--snap);
+      white-space: nowrap;
+    }
+    .btn:hover { background: var(--tint10); border-color: var(--line-strong); }
+    .btn-solid { background: var(--bone); border-color: var(--bone); color: var(--ink-on-bone); }
+    .btn-solid:hover { opacity: 0.88; background: var(--bone); }
+    .btn-sun { border-color: var(--sun); color: var(--sun); }
+    .btn-sun:hover { background: var(--sun); color: var(--ink-on-bone); }
+    .btn-sm { padding: 0.34rem 0.6rem; font-size: 0.6rem; }
+    .btn-xs { padding: 0.24rem 0.48rem; font-size: 0.58rem; letter-spacing: 0.08em; }
+    .btn.active-ctrl { background: var(--bone); border-color: var(--bone); color: var(--ink-on-bone); }
+
+    .ver-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 0.28rem 0.58rem; font-family: var(--f-mono); font-size: 0.62rem; color: var(--ink-muted);
+    }
+    .ver-dot { width: 6px; height: 6px; background: var(--sun); display: inline-block; }
+
+    .input, .textarea, .select {
+      width: 100%; background: var(--paper); border: 1px solid var(--line);
+      border-radius: var(--radius); padding: 7px 10px; font-size: 0.8rem; color: var(--ink); outline: none;
+    }
+    .input:focus, .textarea:focus, .select:focus { border-color: var(--sun); }
+    label {
+      display: block; font-family: var(--f-mono); font-size: 0.59rem;
+      letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-muted); margin-bottom: 4px;
+    }
+
+    /* ==================== 01 PÁGINA PÚBLICA ==================== */
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 1.5rem clamp(1rem, 3vw, 2.5rem) 5rem; }
+    .sheet-head { display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem; color: var(--ink-muted); }
+    .sheet-head__n { font-family: var(--f-mono); font-size: 0.72rem; color: var(--sun); }
+    .sheet-head__title { font-size: 0.625rem; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; white-space: nowrap; }
+    .sheet-head__lead { flex: 1; height: 1px; background: var(--line-soft); }
+    .sheet-head__glyph { font-family: var(--f-mono); font-size: 0.7rem; color: var(--ink-faint); letter-spacing: 0.12em; }
+    .section-block { border-top: 1px solid var(--line); padding-block: clamp(2rem, 4vw, 3.2rem); position: relative; }
+
+    .edition-rail {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
+      border-block: 1px solid var(--line-soft); padding-block: 9px; margin-bottom: 1.8rem;
+    }
+    .edition-btn {
+      background: transparent; border: 1px solid transparent; border-radius: var(--radius);
+      padding: 4px 9px; font-size: 0.68rem; color: var(--ink-dim); cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .edition-btn.is-selected { background: var(--tint10); border-color: var(--line-strong); color: var(--ink); }
+    .swatch { width: 8px; height: 8px; }
+
+    .hero { position: relative; padding: 1.2rem 0 3rem; overflow: hidden; }
+    .hero-glow {
+      position: absolute; right: -8%; top: -15%; width: min(50vw, 560px); aspect-ratio: 1; border-radius: 50%;
+      background: radial-gradient(circle, var(--sun-glow) 0%, transparent 66%); pointer-events: none;
+    }
+    .hero-halo {
+      position: absolute; right: 4%; top: -6%; width: min(38vw, 440px); aspect-ratio: 1; border-radius: 50%;
+      border: 1px solid var(--line-soft); pointer-events: none;
+    }
+    .hero-stage {
+      display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(300px, 0.9fr);
+      gap: clamp(1.5rem, 5vw, 4rem); align-items: start; position: relative; z-index: 2;
+    }
+    @media (max-width: 860px) { .hero-stage { grid-template-columns: 1fr; } }
+    .hero-name { font-weight: 500; font-size: clamp(2.8rem, 6vw, 4.8rem); letter-spacing: -0.035em; line-height: 0.92; margin: 0; }
+    .vitals { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line); margin-top: 22px; background: color-mix(in srgb, var(--paper-raised) 70%, transparent); }
+    .vital { padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; }
+    .vital + .vital { border-left: 1px solid var(--line); }
+    .vital__n { font-size: 1.55rem; font-weight: 300; line-height: 1; }
+    .vital__l { font-family: var(--f-mono); font-size: 0.56rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-muted); }
+
+    .panel { background: var(--paper-raised); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
+    .spec-row { display: flex; justify-content: space-between; gap: 12px; padding-block: 8px; border-bottom: 1px solid var(--line-soft); font-size: 0.82rem; }
+    .spec-row:last-child { border-bottom: 0; }
+    .spec-k { font-family: var(--f-mono); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-faint); }
+
+    .showroom-frame { background: var(--paper-raised); border: 1px solid var(--line-strong); display: grid; grid-template-columns: 1.3fr 1fr; }
+    @media (max-width: 860px) { .showroom-frame { grid-template-columns: 1fr; } }
+    .showroom-visual { background: radial-gradient(circle at 30% 30%, var(--sun-glow), transparent 65%), var(--paper-soft); border-right: 1px solid var(--line); padding: 20px; display: flex; flex-direction: column; justify-content: space-between; }
+    .showroom-mock { border: 1px solid var(--line-strong); background: var(--paper); padding: 14px; margin-top: 14px; }
+    .showroom-copy { padding: 22px; display: flex; flex-direction: column; justify-content: space-between; gap: 14px; }
+    .strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-top: 10px; }
+    .strip-btn { text-align: left; background: var(--paper-raised); border: 1px solid var(--line); padding: 11px 13px; cursor: pointer; }
+    .strip-btn.active { border-color: var(--sun); background: var(--tint5); }
+
+    .chip { display: inline-flex; align-items: center; padding: 4px 10px; border: 1px solid var(--line); font-family: var(--f-mono); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-dim); cursor: pointer; background: transparent; }
+    .chip.active { background: var(--bone); border-color: var(--bone); color: var(--ink-on-bone); }
+    .timeline-row { border-left: 1px solid var(--line-strong); padding: 4px 0 18px 18px; position: relative; cursor: pointer; }
+    .timeline-row::before { content: ""; position: absolute; left: -4px; top: 9px; width: 7px; height: 7px; background: var(--paper); border: 1px solid var(--sun); }
+    .timeline-row.open::before { background: var(--sun); }
+    .segments { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; margin-top: 8px; }
+    .seg { height: 5px; background: var(--line-soft); }
+    .seg.on { background: var(--ink); }
+    .seg.on.hi { background: var(--sun); }
+    .cert-card { background: var(--paper-raised); border: 1px solid var(--line); padding: 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+
+    /* ==================== 02 STUDIO IDE FULL-BLEED ==================== */
+    .studio-app {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 56px);
+      overflow: hidden;
+      background: var(--paper);
+    }
+    .studio-toolbar {
+      height: 46px;
+      flex-shrink: 0;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      padding: 0 14px;
+      background: var(--paper-raised);
+      border-bottom: 1px solid var(--line);
+      gap: 10px;
+    }
+    .studio-workspace {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 276px 1fr 304px;
+    }
+    .studio-dock-left {
+      border-right: 1px solid var(--line);
+      background: var(--paper-raised);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .studio-dock-right {
+      border-left: 1px solid var(--line);
+      background: var(--paper-raised);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .dock-tabs {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      border-bottom: 1px solid var(--line);
+      flex-shrink: 0;
+    }
+    .dock-tabs.cols-3 { grid-template-columns: repeat(3, 1fr); }
+    .dock-tab {
+      background: transparent; border: 0; cursor: pointer;
+      padding: 10px 6px; font-family: var(--f-mono); font-size: 0.62rem;
+      letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-muted);
+      border-bottom: 2px solid transparent;
+    }
+    .dock-tab.active { color: var(--ink); border-bottom-color: var(--sun); background: var(--tint5); }
+    .dock-scroll { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 14px; }
+
+    .palette-group-title {
+      font-family: var(--f-mono); font-size: 0.58rem; letter-spacing: 0.16em;
+      text-transform: uppercase; color: var(--ink-faint); margin: 0 0 8px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .palette-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .palette-tile {
+      background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 9px 8px; text-align: left; cursor: pointer;
+      display: flex; flex-direction: column; gap: 4px;
+      transition: border-color var(--snap), background var(--snap);
+    }
+    .palette-tile:hover { border-color: var(--sun); background: var(--tint5); }
+    .palette-tile__icon { font-family: var(--f-mono); font-size: 0.66rem; color: var(--sun); }
+    .palette-tile__name { font-size: 0.72rem; font-weight: 500; line-height: 1.2; }
+
+    .layer-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 4px;
+      padding: 6px 8px; border: 1px solid var(--line-soft); background: var(--paper);
+      border-radius: var(--radius); font-size: 0.72rem; cursor: pointer;
+    }
+    .layer-row.selected { border-color: var(--sun); background: var(--tint5); }
+    .layer-icon-btn {
+      background: none; border: 0; cursor: pointer; padding: 2px 4px;
+      font-size: 0.7rem; color: var(--ink-muted); opacity: 0.8;
+    }
+    .layer-icon-btn:hover { color: var(--ink); opacity: 1; }
+
+    /* Viewport central del Studio */
+    .studio-viewport {
+      flex: 1;
+      min-height: 0;
+      position: relative;
+      overflow: auto;
+      background:
+        radial-gradient(circle at 50% 0%, var(--sun-glow), transparent 45%),
+        var(--paper);
+      padding: 28px 32px 60px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .artboard-wrap {
+      transform-origin: top center;
+      transition: transform 150ms var(--ease-out);
+    }
+    .ruler-top {
+      height: 18px;
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--f-mono);
+      font-size: 9px;
+      color: var(--ink-faint);
+      border-bottom: 1px solid var(--line-soft);
+      padding: 0 2px;
+      margin-bottom: 4px;
+      user-select: none;
+    }
+    .canvas-stage {
+      position: relative;
+      width: 960px;
+      min-height: 920px;
+      background-color: var(--paper-raised);
+      border: 1px solid var(--line-strong);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+    }
+    .canvas-stage.show-grid {
+      background-image:
+        linear-gradient(to right, var(--line-soft) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--line-soft) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+    .canvas-stage.mobile-mode {
+      width: 390px !important;
+      min-height: 760px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background-image: none;
+    }
+
+    .canvas-node {
+      position: absolute;
+      border: 1px solid var(--line);
+      padding: 12px;
+      cursor: grab;
+      user-select: none;
+      overflow: hidden;
+    }
+    .canvas-node.locked { cursor: not-allowed; opacity: 0.92; }
+    .canvas-node.selected {
+      border-color: var(--sun);
+      box-shadow: 0 0 0 1px var(--sun);
+    }
+    .canvas-stage.mobile-mode .canvas-node {
+      position: relative; left: auto !important; top: auto !important;
+      width: 100% !important; height: auto !important; cursor: default;
+    }
+    .resize-handle {
+      position: absolute; right: 2px; bottom: 2px; width: 13px; height: 13px;
+      cursor: nwse-resize; border-right: 2px solid var(--sun); border-bottom: 2px solid var(--sun);
+    }
+    .canvas-stage.mobile-mode .resize-handle, .canvas-node.locked .resize-handle { display: none; }
+
+    .node-hud {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      margin: 0 auto 12px;
+      width: fit-content;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      background: var(--paper-raised);
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+    }
+    .snap-guide-v, .snap-guide-h { position: absolute; pointer-events: none; z-index: 999; background: var(--sun); opacity: 0.8; }
+    .snap-guide-v { top: 0; bottom: 0; width: 1px; }
+    .snap-guide-h { left: 0; right: 0; height: 1px; }
+
+    .studio-statusbar {
+      height: 28px;
+      flex-shrink: 0;
+      border-top: 1px solid var(--line);
+      background: var(--paper-raised);
+      padding: 0 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--f-mono);
+      font-size: 0.62rem;
+      color: var(--ink-muted);
+    }
+
+    .insp-section {
+      border-bottom: 1px solid var(--line-soft);
+      padding-bottom: 12px;
+    }
+    .insp-section:last-child { border-bottom: 0; }
+    .insp-title {
+      font-family: var(--f-mono); font-size: 0.58rem; letter-spacing: 0.16em;
+      text-transform: uppercase; color: var(--ink-faint); margin: 0 0 8px;
+    }
+    .insp-grid-4 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .align-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 10px; }
+
+    /* ==================== STUDIO IDE CODE WORKBENCH ==================== */
+    .studio-center-col {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 0;
+    }
+    .studio-ide-pane {
+      flex-shrink: 0;
+      height: 270px;
+      border-top: 1px solid var(--line-strong);
+      background: #050505;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .studio-app.ide-only .studio-viewport { display: none; }
+    .studio-app.ide-only .studio-ide-pane { flex: 1; height: auto; border-top: 0; }
+    .studio-app.visual-only .studio-ide-pane { display: none; }
+
+    .ide-topbar {
+      height: 36px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 0 12px;
+      background: var(--paper-raised);
+      border-bottom: 1px solid var(--line);
+      overflow-x: auto;
+    }
+    .ide-tabs { display: flex; align-items: center; gap: 4px; }
+    .ide-tab {
+      background: transparent; border: 1px solid transparent; border-bottom: 2px solid transparent;
+      padding: 6px 10px; cursor: pointer; font-family: var(--f-mono); font-size: 0.64rem;
+      color: var(--ink-muted); white-space: nowrap;
+    }
+    .ide-tab:hover { color: var(--ink); }
+    .ide-tab.active {
+      color: var(--ink); background: var(--paper); border-color: var(--line-soft);
+      border-bottom-color: var(--sun);
+    }
+    .ide-body {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 1fr;
+    }
+    .studio-app.ide-only .ide-body.has-preview {
+      grid-template-columns: 1.35fr 1fr;
+    }
+    .ide-editor-wrap {
+      display: flex;
+      min-height: 0;
+      overflow: hidden;
+      background: #040404;
+      position: relative;
+    }
+    body.light .studio-ide-pane, body.light .ide-editor-wrap { background: #f8f5ef; }
+    .ide-gutter {
+      width: 44px;
+      flex-shrink: 0;
+      padding: 12px 8px 12px 4px;
+      text-align: right;
+      font-family: var(--f-mono);
+      font-size: 12px;
+      line-height: 1.55;
+      color: var(--ink-faint);
+      border-right: 1px solid var(--line-soft);
+      user-select: none;
+      overflow: hidden;
+    }
+    .ide-textarea {
+      flex: 1;
+      border: 0;
+      outline: none;
+      resize: none;
+      background: transparent;
+      color: var(--ink);
+      padding: 12px 14px;
+      font-family: var(--f-mono);
+      font-size: 12px;
+      line-height: 1.55;
+      tab-size: 2;
+      white-space: pre;
+      overflow: auto;
+    }
+    .ide-preview-side {
+      border-left: 1px solid var(--line);
+      padding: 18px;
+      background: var(--paper);
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* ==================== 03 ADMIN CONTROL CENTER (LEFT RAIL STYLE RYOKU-HUB) ==================== */
+    .admin-shell {
+      display: grid;
+      grid-template-columns: 256px 1fr;
+      height: calc(100vh - 56px);
+      overflow: hidden;
+    }
+    @media (max-width: 860px) { .admin-shell { grid-template-columns: 1fr; height: auto; overflow: visible; } }
+    .admin-rail {
+      border-right: 1px solid var(--line);
+      background: var(--paper-raised);
+      padding: 16px 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 14px;
+      overflow-y: auto;
+    }
+    .admin-group-label {
+      font-family: var(--f-mono);
+      font-size: 0.56rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      margin: 12px 0 6px 4px;
+    }
+    .admin-nav-btn {
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      padding: 8px 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.74rem;
+      color: var(--ink-dim);
+      margin-bottom: 2px;
+      transition: background var(--snap), border-color var(--snap), color var(--snap);
+    }
+    .admin-nav-btn:hover { background: var(--tint5); border-color: var(--line); color: var(--ink); }
+    .admin-nav-btn.active { background: var(--tint10); border-color: var(--line-strong); color: var(--ink); border-left: 2px solid var(--sun); }
+    .admin-workspace {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 0;
+      background: var(--paper);
+    }
+    .admin-topbar {
+      height: 46px;
+      flex-shrink: 0;
+      border-bottom: 1px solid var(--line);
+      background: var(--paper-raised);
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .admin-main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 28px 60px;
+    }
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border: 1px solid var(--line);
+      background: var(--paper-raised);
+      margin-bottom: 20px;
+    }
+    @media (max-width: 720px) { .kpi-strip { grid-template-columns: repeat(2, 1fr); } }
+    .kpi-cell { padding: 14px 16px; }
+    .kpi-cell + .kpi-cell { border-left: 1px solid var(--line); }
+    .kpi-num { font-size: 1.6rem; font-weight: 300; line-height: 1.1; margin-top: 4px; }
+    .inbox-split {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      border: 1px solid var(--line);
+      background: var(--paper-raised);
+      min-height: 360px;
+    }
+    @media (max-width: 780px) { .inbox-split { grid-template-columns: 1fr; } }
+    .inbox-list { border-right: 1px solid var(--line); }
+    .inbox-item {
+      width: 100%; text-align: left; background: transparent; border: 0;
+      border-bottom: 1px solid var(--line-soft); padding: 12px 14px; cursor: pointer;
+    }
+    .inbox-item:hover { background: var(--tint5); }
+    .inbox-item.active { background: var(--tint10); border-left: 2px solid var(--sun); }
+
+    /* Dropzone & flujo guiado de subida */
+    .step-rail {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border: 1px solid var(--line);
+      background: var(--paper-raised);
+      margin-bottom: 18px;
+    }
+    @media (max-width: 720px) { .step-rail { grid-template-columns: 1fr; } }
+    .step-cell { padding: 11px 14px; font-size: 0.78rem; }
+    .step-cell + .step-cell { border-left: 1px solid var(--line); }
+    .dropzone {
+      border: 1.5px dashed var(--line-strong);
+      background: var(--paper);
+      padding: 18px 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color var(--snap), background var(--snap);
+    }
+    .dropzone:hover, .dropzone.drag-over {
+      border-color: var(--sun);
+      background: var(--tint5);
+    }
+
+    /* ==================== MODALS & TOAST ==================== */
+    .modal-backdrop {
+      position: fixed; inset: 0; z-index: 85;
+      background: color-mix(in srgb, var(--paper) 88%, transparent);
+      backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-panel { width: 100%; max-width: 840px; background: var(--paper-raised); border: 1px solid var(--line-strong); }
+    .pdf-sheet { margin: 16px auto; max-width: 560px; background: #f5f2ed; color: #141210; border: 1px solid rgba(20,18,16,0.22); padding: 32px; transform-origin: top center; }
+    .toast {
+      position: fixed; bottom: 36px; right: 20px; z-index: 98;
+      background: var(--bone); color: var(--ink-on-bone); border-radius: var(--radius);
+      padding: 9px 15px; font-family: var(--f-mono); font-size: 0.7rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="grain-overlay" aria-hidden="true"></div>
+
+  <header class="hdr">
+    <div class="hdr-in">
+      <a href="#" class="logo" onclick="switchView('public'); return false;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-opacity="0.45" />
+          <circle cx="12" cy="12" r="3" fill="var(--sun)" />
+        </svg>
+        <span>AR · CV Studio</span>
+      </a>
+
+      <nav class="hdr-nav">
+        <button class="hdr-link active" data-view="public">01 Página Pública</button>
+        <button class="hdr-link" data-view="studio">02 Studio Lienzo</button>
+        <button class="hdr-link" data-view="admin">03 Control Center CMS</button>
+        <button class="hdr-link" data-view="login">04 Acceso</button>
+      </nav>
+
+      <div class="hdr-right">
+        <span class="ver-pill"><span class="ver-dot"></span><span id="pubVerTop">v1.0</span></span>
+        <button class="btn btn-sm" id="globalLocaleBtn">ES</button>
+        <button class="btn btn-sm" id="globalThemeBtn">Obsidian</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== 01 PÁGINA PÚBLICA ==================== -->
+  <section id="view-public">
+    <div class="wrap">
+      <div class="edition-rail">
+        <div class="row">
+          <span class="mono faint" style="font-size:0.6rem; letter-spacing:0.16em; text-transform:uppercase;">Atmósfera</span>
+          <button class="edition-btn is-selected" data-accent-pick="amaterasu" onclick="setAccent('amaterasu')"><span class="swatch" style="background:#ce5e32"></span>Amaterasu</button>
+          <button class="edition-btn" data-accent-pick="void" onclick="setAccent('void')"><span class="swatch" style="background:#6daf8c"></span>Void</button>
+          <button class="edition-btn" data-accent-pick="cobalt" onclick="setAccent('cobalt')"><span class="swatch" style="background:#6ea5cf"></span>Cobalt</button>
+          <button class="edition-btn" data-accent-pick="indigo" onclick="setAccent('indigo')"><span class="swatch" style="background:#9299d3"></span>Indigo</button>
+        </div>
+        <div class="row">
+          <button class="btn btn-sm" onclick="switchView('studio')">Diseñar en Studio</button>
+          <button class="btn btn-solid btn-sm" id="openAtsBtn">Exportar CV ATS (PDF)</button>
+        </div>
+      </div>
+
+      <div id="publicWidgetsContainer"></div>
+    </div>
+  </section>
+
+  <!-- ==================== 02 STUDIO LIENZO LIBRE (IDE PROFESIONAL) ==================== -->
+  <section id="view-studio" class="studio-app visual-only hidden">
+    <div class="studio-toolbar">
+      <div class="row">
+        <span class="mono" style="font-size:0.72rem;">mi-cv <span class="faint">/</span></span>
+        <span class="ver-pill"><span class="ver-dot"></span><span id="draftBadge">DRAFT v1</span></span>
+        <span class="mono faint" id="autoSaveLabel" style="font-size:0.62rem;">Autoguardado listo</span>
+      </div>
+
+      <div class="row">
+        <button class="btn btn-xs active-ctrl" id="viewVisualBtn" onclick="setStudioSurface('visual')">Diseño</button>
+        <button class="btn btn-xs" id="viewSplitBtn" onclick="setStudioSurface('split')">Split IDE</button>
+        <button class="btn btn-xs" id="viewIdeBtn" onclick="setStudioSurface('ide')">&lt;/&gt; Código</button>
+        <span style="width:1px; height:18px; background:var(--line);"></span>
+        <button class="btn btn-xs active-ctrl" id="modeDesktopBtn">Desktop</button>
+        <button class="btn btn-xs" id="modeMobileBtn">Mobile</button>
+        <span style="width:1px; height:18px; background:var(--line);"></span>
+        <button class="btn btn-xs" onclick="setStudioZoom(0.75)" id="zoom75Btn">75%</button>
+        <button class="btn btn-xs active-ctrl" onclick="setStudioZoom(1)" id="zoom100Btn">100%</button>
+        <button class="btn btn-xs active-ctrl" id="toggleGridBtn" onclick="toggleGrid()">⊞ Grid</button>
+      </div>
+
+      <div class="row" style="justify-self:end;">
+        <button class="btn btn-xs" id="studioUndoBtn">↶</button>
+        <button class="btn btn-xs" id="studioRedoBtn">↷</button>
+        <button class="btn btn-xs" onclick="switchView('public')">👁 Público</button>
+        <button class="btn btn-sun btn-xs" id="studioPublishBtn">Publicar</button>
+      </div>
+    </div>
+
+    <div class="studio-workspace">
+      <!-- DOCK IZQUIERDO: + INSERTAR / CAPAS -->
+      <aside class="studio-dock-left">
+        <div class="dock-tabs">
+          <button class="dock-tab active" id="leftTabInsert" onclick="setLeftDock('insert')">+ Insertar</button>
+          <button class="dock-tab" id="leftTabLayers" onclick="setLeftDock('layers')">≡ Capas</button>
+        </div>
+
+        <div id="leftDockInsert" class="dock-scroll">
+          <input class="input" id="paletteSearch" placeholder="Buscar bloque o widget..." oninput="renderPalette()" />
+          <div id="paletteContainer" style="display:flex; flex-direction:column; gap:14px;"></div>
+
+          <div style="border-top:1px solid var(--line-soft); padding-top:12px;">
+            <p class="palette-group-title"><span>Estado del Lienzo</span></p>
+            <div style="display:grid; gap:6px;">
+              <button class="btn btn-xs" onclick="clearCanvas()">Vaciar Lienzo (Desde Cero)</button>
+              <button class="btn btn-xs" onclick="resetStarterCanvas()">Cargar Base Obsidian</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="leftDockLayers" class="dock-scroll hidden">
+          <p class="palette-group-title"><span>Capas / Orden Móvil</span><span id="layerCount">0</span></p>
+          <div id="layersList" style="display:grid; gap:5px;"></div>
+        </div>
+      </aside>
+
+      <!-- CENTRO: ARTBOARD + IDE WORKBENCH ENFOCADO -->
+      <div class="studio-center-col">
+        <div class="studio-viewport" id="studioViewport">
+          <div>
+            <div class="node-hud" id="selectionHud"></div>
+            <div class="artboard-wrap" id="artboardWrap">
+              <div class="ruler-top" id="studioRuler">
+                <span>0</span><span>160</span><span>320</span><span>480</span><span>640</span><span>800</span><span>960px</span>
+              </div>
+              <div id="canvasStage" class="canvas-stage show-grid"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="studio-ide-pane" id="studioIdePane">
+          <div class="ide-topbar">
+            <div class="ide-tabs">
+              <button class="ide-tab active" data-ide-file="html" onclick="setIdeFile('html')">&lt;&gt; component.html</button>
+              <button class="ide-tab" data-ide-file="css" onclick="setIdeFile('css')"># styles.css</button>
+              <button class="ide-tab" data-ide-file="json" onclick="setIdeFile('json')">{ } canvas.json</button>
+            </div>
+            <div class="row" id="ideSnippetsBar">
+              <input type="file" id="sourceUploadInput" class="hidden" multiple accept=".html,.htm,.css" onchange="handleSourceUpload(event)" />
+              <button class="btn btn-sun btn-xs" onclick="document.getElementById('sourceUploadInput').click()">↑ Subir .html/.css</button>
+              <span class="mono faint" style="font-size:0.58rem; text-transform:uppercase; letter-spacing:0.12em;">Snippets:</span>
+              <button class="btn btn-xs" onclick="insertCodeSnippet('dataCard')">Data {{cv.*}}</button>
+              <button class="btn btn-xs" onclick="insertCodeSnippet('terminal')">Terminal</button>
+              <button class="btn btn-xs" onclick="insertCodeSnippet('metrics')">Bento KPI</button>
+              <span class="ver-pill" id="ideStatusPill">Shadow DOM · Variables CV</span>
+              <button class="btn btn-solid btn-xs hidden" id="applyJsonBtn" onclick="applyCanvasJson()">Aplicar JSON</button>
+            </div>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:6px; padding:5px 12px; border-bottom:1px solid var(--line-soft); background:var(--paper-raised); overflow-x:auto;">
+            <span class="mono faint" style="font-size:0.58rem; letter-spacing:0.12em; text-transform:uppercase; white-space:nowrap;">Variables CV:</span>
+            <button class="btn btn-xs" onclick="insertTemplateVar('{{cv.profile.fullName}}')">fullName</button>
+            <button class="btn btn-xs" onclick="insertTemplateVar('{{cv.profile.headline}}')">headline</button>
+            <button class="btn btn-xs" onclick="insertTemplateVar('{{cv.stats.certificationsCount}}')">certsCount</button>
+            <button class="btn btn-xs" onclick="insertTemplateVar('{{#each cv.projects}}<div>{{title}}</div>{{/each}}')">#each projects</button>
+            <button class="btn btn-xs" onclick="insertTemplateVar('{{#each cv.certifications}}<div>{{title}} · {{issuer}}</div>{{/each}}')">#each certs</button>
+          </div>
+
+          <div class="ide-body has-preview" id="ideBody">
+            <div class="ide-editor-wrap" id="ideEditorWrap">
+              <div class="ide-gutter" id="ideGutter">1</div>
+              <textarea id="ideTextarea" class="ide-textarea" spellcheck="false" oninput="onIdeInput()" onscroll="syncIdeScroll()" onkeydown="handleIdeKeydown(event)"></textarea>
+            </div>
+            <div class="ide-preview-side hidden" id="ideSidePreview">
+              <div class="row" style="justify-content:space-between; border-bottom:1px solid var(--line-soft); padding-bottom:8px;">
+                <span class="mono" style="font-size:0.65rem; color:var(--sun); text-transform:uppercase; letter-spacing:0.14em;">Vista Previa En Vivo (Aislada)</span>
+                <span class="mono faint" style="font-size:0.62rem;" id="idePreviewNodeLabel"></span>
+              </div>
+              <div id="ideSidePreviewMount" class="panel" style="min-height:180px;"></div>
+              <div class="mono muted" style="font-size:0.66rem; line-height:1.5;">
+                Tokens disponibles en CSS: <code>var(--paper)</code>, <code>var(--ink)</code>, <code>var(--sun)</code>, <code>var(--line)</code>, <code>var(--f-display)</code>, <code>var(--f-mono)</code>.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DOCK DERECHO: INSPECTOR POR TABS (DISEÑO / CONTENIDO / TEMA) -->
+      <aside class="studio-dock-right">
+        <div class="dock-tabs cols-3">
+          <button class="dock-tab active" data-insp-tab="design" onclick="setInspTab('design')">Diseño</button>
+          <button class="dock-tab" data-insp-tab="content" onclick="setInspTab('content')">Contenido</button>
+          <button class="dock-tab" data-insp-tab="theme" onclick="setInspTab('theme')">Tema</button>
+        </div>
+        <div class="dock-scroll" id="inspectorBody"></div>
+      </aside>
+    </div>
+
+    <footer class="studio-statusbar">
+      <div class="row" style="gap:16px;">
+        <span id="statusSize">Artboard: 960×920px</span>
+        <span id="statusNodes">Nodos: 6</span>
+        <span id="statusSelected">Sin selección</span>
+      </div>
+      <div>
+        <span>Atajos: Ctrl+Z Deshacer · Ctrl+D Duplicar · Flechas Mover 8px · Del Eliminar</span>
+      </div>
+    </footer>
+  </section>
+
+  <!-- ==================== 03 ADMIN CONTROL CENTER (RAIL IZQUIERDO ESTILO RYOKU-HUB) ==================== -->
+  <section id="view-admin" class="hidden">
+    <div class="admin-shell">
+      <aside class="admin-rail">
+        <div>
+          <div style="border-bottom:1px solid var(--line-soft); padding-bottom:12px; margin-bottom:8px;">
+            <div class="mono" style="font-size:0.6rem; letter-spacing:0.16em; color:var(--sun); text-transform:uppercase;">Control Center</div>
+            <div class="serif" style="font-size:1.15rem; margin-top:2px;" id="adminOwnerName">Alex Rivera</div>
+            <div class="mono faint" style="font-size:0.62rem;">mi-cv · Single-Tenant</div>
+          </div>
+
+          <div class="admin-group-label">General</div>
+          <button class="admin-nav-btn active" data-admin-sec="overview" onclick="setAdminSection('overview')"><span>00 Resumen &amp; Salud</span><span class="mono faint" id="adminHealthBadge">95%</span></button>
+
+          <div class="admin-group-label">Contenido del CV</div>
+          <button class="admin-nav-btn" data-admin-sec="identity" onclick="setAdminSection('identity')"><span>01 Identidad ES/EN</span><span class="mono faint">PERFIL</span></button>
+          <button class="admin-nav-btn" data-admin-sec="career" onclick="setAdminSection('career')"><span>02 Carrera &amp; Stack</span><span class="mono faint" id="adminCareerCount">8</span></button>
+
+          <div class="admin-group-label">Bóveda &amp; Mensajes</div>
+          <button class="admin-nav-btn" data-admin-sec="certs" onclick="setAdminSection('certs')"><span>03 Bóveda PDF Certs</span><span class="mono faint" id="adminCertCount">2</span></button>
+          <button class="admin-nav-btn" data-admin-sec="messages" onclick="setAdminSection('messages')"><span>04 Bandeja</span><span class="mono" style="color:var(--sun);" id="adminMsgCount">1</span></button>
+
+          <div class="admin-group-label">Sistema</div>
+          <button class="admin-nav-btn" data-admin-sec="security" onclick="setAdminSection('security')"><span>05 Acceso &amp; Versiones</span><span class="mono faint">SYS</span></button>
+        </div>
+
+        <div style="border-top:1px solid var(--line-soft); padding-top:12px; display:grid; gap:8px;">
+          <button class="btn btn-sun btn-sm" onclick="switchView('studio')">Abrir Studio Visual →</button>
+          <button class="btn btn-sm" onclick="switchView('public')">Ver Página Pública</button>
+        </div>
+      </aside>
+
+      <div class="admin-workspace">
+        <div class="admin-topbar">
+          <div class="row">
+            <span class="mono faint" style="font-size:0.66rem;">Control Center /</span>
+            <span class="mono" style="font-size:0.68rem; color:var(--ink);" id="adminBreadcrumb">00 Resumen &amp; Salud</span>
+          </div>
+          <div class="row">
+            <span class="ver-pill"><span class="ver-dot"></span><span id="adminPubPill">Publicado v1.0</span></span>
+            <button class="btn btn-xs" onclick="setAdminSection('certs')">+ Subir PDF</button>
+            <button class="btn btn-solid btn-xs" onclick="switchView('studio')">Ir al Studio</button>
+          </div>
+        </div>
+        <div class="admin-main" id="adminMainPanel"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 04 LOGIN ==================== -->
+  <section id="view-login" class="hidden">
+    <div class="panel" style="max-width:420px; margin:60px auto; padding:28px;">
+      <div class="sheet-head" style="margin-bottom:16px;">
+        <span class="sheet-head__n">00 //</span><span class="sheet-head__title">Autenticación</span><span class="sheet-head__lead"></span>
+      </div>
+      <h2 class="serif" style="margin:0 0 6px; font-weight:400; font-size:1.75rem;">Acceso Privado</h2>
+      <p class="muted" style="font-size:0.82rem; margin-bottom:18px;">Sesión HttpOnly JWT + rate limiting.</p>
+      <div style="display:grid; gap:12px;">
+        <div><label>Correo</label><input class="input" type="email" value="admin@proyecto-cv.local" /></div>
+        <div><label>Contraseña</label><input class="input" type="password" value="••••••••••••" /></div>
+        <button class="btn btn-solid" onclick="switchView('admin'); showToast('Sesión iniciada · Control Center listo');">Entrar al Panel</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== MODALES PDF Y ATS ==================== -->
+  <div id="pdfModal" class="modal-backdrop hidden">
+    <div class="modal-panel">
+      <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid var(--line);">
+        <div>
+          <strong id="pdfModalTitle" style="font-size:0.9rem;">Certificado</strong>
+          <div id="pdfModalMeta" class="mono muted" style="font-size:0.65rem;"></div>
+        </div>
+        <div class="row">
+          <button class="btn btn-xs" id="pdfPrevBtn" onclick="changePdfPage(-1)">◀</button>
+          <span class="mono muted" id="pdfPageIndicator" style="font-size:0.68rem;">1 / 2</span>
+          <button class="btn btn-xs" id="pdfNextBtn" onclick="changePdfPage(1)">▶</button>
+          <button class="btn btn-xs" id="pdfZoomOutBtn" onclick="zoomPdf(-10)">-</button>
+          <span class="mono muted" id="pdfZoomIndicator" style="font-size:0.68rem;">100%</span>
+          <button class="btn btn-xs" id="pdfZoomInBtn" onclick="zoomPdf(10)">+</button>
+          <button class="btn btn-solid btn-xs" id="pdfDownloadBtn">Descargar</button>
+          <button class="btn btn-xs" onclick="closePdfModal()">Cerrar [ESC]</button>
+        </div>
+      </div>
+      <div id="pdfViewport" style="padding:18px; max-height:74vh; overflow:auto; background:var(--paper);"></div>
+    </div>
+  </div>
+
+  <div id="atsModal" class="modal-backdrop hidden">
+    <div class="modal-panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid var(--line);">
+        <strong id="atsTitle" style="font-size:0.9rem;">Vista Previa CV ATS</strong>
+        <div class="row">
+          <button class="btn btn-solid btn-xs" onclick="showToast('CV ATS descargado en PDF')">Descargar PDF</button>
+          <button class="btn btn-xs" onclick="document.getElementById('atsModal').classList.add('hidden')">Cerrar</button>
+        </div>
+      </div>
+      <div style="padding:18px; max-height:74vh; overflow:auto; background:var(--paper);">
+        <div id="atsPreviewSheet" class="pdf-sheet"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script>
+    const STARTER_NODES = () => [
+      { id: "n-hero", type: "widget_hero", label: "00 Hero Dossier", x: 24, y: 24, w: 912, h: 200, z: 1, surface: "raised", border: "strong", radius: 2, padding: 18, locked: false, mobileOrder: 1, mobileVisible: true, textEs: "", textEn: "", showVitals: true },
+      { id: "n-projects", type: "widget_projects", label: "01 Showroom Proyectos", x: 24, y: 248, w: 912, h: 176, z: 1, surface: "raised", border: "soft", radius: 2, padding: 16, locked: false, mobileOrder: 2, mobileVisible: true, textEs: "", textEn: "" },
+      { id: "n-timeline", type: "widget_timeline", label: "02 Trayectoria", x: 24, y: 448, w: 544, h: 216, z: 1, surface: "raised", border: "soft", radius: 2, padding: 16, locked: false, mobileOrder: 3, mobileVisible: true, textEs: "", textEn: "" },
+      { id: "n-skills", type: "widget_skills", label: "03 Stack Técnico", x: 592, y: 448, w: 344, h: 216, z: 1, surface: "raised", border: "soft", radius: 2, padding: 16, locked: false, mobileOrder: 4, mobileVisible: true, textEs: "", textEn: "" },
+      { id: "n-certs", type: "widget_certs", label: "04 Bóveda PDF Certs", x: 24, y: 688, w: 912, h: 152, z: 1, surface: "raised", border: "soft", radius: 2, padding: 16, locked: false, mobileOrder: 5, mobileVisible: true, textEs: "", textEn: "" },
+      { id: "n-contact", type: "widget_contact", label: "05 Contacto", x: 24, y: 864, w: 912, h: 144, z: 1, surface: "raised", border: "soft", radius: 2, padding: 16, locked: false, mobileOrder: 6, mobileVisible: true, textEs: "", textEn: "" },
+    ];
+
+    const CODE_SNIPPETS = {
+      dataCard: {
+        html: `<div class="cv-card">\n  <div class="eyebrow">// DATA-DRIVEN TEMPLATE</div>\n  <h3>{{cv.profile.fullName}}</h3>\n  <p class="role">{{cv.profile.headline}}</p>\n  <div class="meta">Proyectos: {{cv.stats.projectsCount}} · Certs PDF: {{cv.stats.certificationsCount}}</div>\n  <div class="proj-list">\n    {{#each cv.projects}}<span>• {{title}}</span>{{/each}}\n  </div>\n</div>`,
+        css: `.cv-card {\n  border: 1px solid var(--line);\n  padding: 14px;\n  background: var(--paper);\n}\n.eyebrow { font-family: var(--f-mono); font-size: 10px; color: var(--sun); }\nh3 { margin: 6px 0 2px; font-weight: 500; font-size: 1.15rem; }\n.role { margin: 0 0 8px; font-family: var(--f-display); font-style: italic; color: var(--ink-dim); }\n.meta { font-family: var(--f-mono); font-size: 11px; color: var(--ink-muted); margin-bottom: 8px; }\n.proj-list { display: flex; flex-wrap: wrap; gap: 10px; font-size: 12px; color: var(--ink); }`
+      },
+      terminal: {
+        html: `<div class="term-box">\n  <div class="term-head"><span>● SYSTEM TELEMETRY</span><span>ONLINE</span></div>\n  <div class="term-line">&gt; deploy --region=global --zero-downtime</div>\n  <div class="term-line accent">&gt; status: 99.98% SLA · 14ms p95 latency</div>\n</div>`,
+        css: `.term-box {\n  font-family: var(--f-mono);\n  font-size: 12px;\n  border: 1px solid var(--line);\n  padding: 12px;\n  background: var(--paper);\n}\n.term-head {\n  display: flex;\n  justify-content: space-between;\n  color: var(--sun);\n  font-size: 10px;\n  margin-bottom: 8px;\n}\n.term-line { color: var(--ink-dim); margin: 3px 0; }\n.term-line.accent { color: var(--ink); }`
+      },
+      metrics: {
+        html: `<div class="kpi-grid">\n  <div class="kpi"><strong>12+</strong><span>Años Código</span></div>\n  <div class="kpi"><strong>40M+</strong><span>Req / Día</span></div>\n  <div class="kpi"><strong>100%</strong><span>Type-Safe</span></div>\n</div>`,
+        css: `.kpi-grid {\n  display: grid;\n  grid-template-columns: repeat(3, 1fr);\n  border: 1px solid var(--line);\n}\n.kpi { padding: 12px; text-align: center; }\n.kpi + .kpi { border-left: 1px solid var(--line); }\n.kpi strong { display: block; font-size: 1.4rem; color: var(--sun); font-weight: 400; }\n.kpi span { font-family: var(--f-mono); font-size: 10px; color: var(--ink-muted); text-transform: uppercase; }`
+      },
+      quote: {
+        html: `<blockquote class="ed-quote">\n  “El buen software se lee como arquitectura, no como ruido.”\n  <footer>— Principio de Ingeniería</footer>\n</blockquote>`,
+        css: `.ed-quote {\n  margin: 0;\n  padding: 10px 14px;\n  border-left: 2px solid var(--sun);\n  font-family: var(--f-display);\n  font-style: italic;\n  font-size: 1.15rem;\n  color: var(--ink);\n}\n.ed-quote footer {\n  margin-top: 6px;\n  font-family: var(--f-mono);\n  font-style: normal;\n  font-size: 10px;\n  color: var(--ink-muted);\n}`
+      }
+    };
+
+    const state = {
+      locale: "es",
+      light: false,
+      activeView: "public",
+      studioMode: "desktop",
+      studioSurface: "split",
+      ideFile: "html",
+      studioZoom: 1,
+      showGrid: true,
+      leftDock: "insert",
+      inspTab: "design",
+      adminSec: "overview",
+      adminCareerTab: "projects",
+      selectedMsgId: "m1",
+      pendingPdf: null,
+      publishedVersion: 1,
+      selectedNodeId: "n-hero",
+      dossierTab: "specs",
+      activeProjectIdx: 0,
+      history: [],
+      redoStack: [],
+      pdfModal: { certId: null, page: 1, zoom: 100 },
+      filters: { skillCat: "Todas", timelineType: "all", certQuery: "", certCat: "Todas" },
+      expandedExp: { exp1: true, exp2: false },
+      profile: {
+        name: "Alex Rivera",
+        location: "CDMX · Remoto",
+        roleEs: "Ingeniero de Software Full-Stack",
+        roleEn: "Full-Stack Software Engineer",
+        bioEs: "Construyo sistemas web de alta precisión, seguros y con criterio editorial. Especializado en TypeScript, Next.js, PostgreSQL y arquitectura modular.",
+        bioEn: "I engineer fast, resilient web software with editorial discipline. Focused on TypeScript, Next.js, PostgreSQL, and modular architecture.",
+      },
+      projects: [
+        { code: "PRJ-01", title: "CV Studio Builder", tags: ["Next.js 16", "TypeScript", "PostgreSQL"], metric: "60fps Canvas · ATS PDF", summaryEs: "Lienzo libre conectado a datos estructurados con exportación ATS.", summaryEn: "Data-driven freeform canvas with automated ATS PDF export.", previewLines: ["studio.canvas_schema -> JSONB", "desktop: { x: 24, y: 24, w: 912 }", "mobile: { autoStack: true, order: 1 }"] },
+        { code: "PRJ-02", title: "Vault PDF Engine", tags: ["Security", "StorageProvider", "PDF.js"], metric: "100% %PDF- · SHA-256", summaryEs: "Bóveda documental con validación binaria y visor Lightbox integrado.", summaryEn: "Document vault with binary validation and Lightbox viewer.", previewLines: ["validatePdfBuffer(): %PDF-1.7 OK", "sha256: 9f84c2...a71e", "disposition: inline | controlled"] },
+        { code: "PRJ-03", title: "Telemetry Gateway", tags: ["Docker", "Node.js", "Postgres"], metric: "< 18ms p95 · 99.98%", summaryEs: "Pasarela de eventos en contenedores Docker con rate limiting.", summaryEn: "Event gateway running in Docker containers with rate limiting.", previewLines: ["gateway -> rateLimit(60s)", "postgres_pool: healthy (12ms)", "status: 200 OK"] },
+      ],
+      skills: [
+        { name: "TypeScript / Next.js", cat: "Frontend", level: 94, years: "5a" },
+        { name: "React / Tailwind", cat: "Frontend", level: 92, years: "5a" },
+        { name: "PostgreSQL / Prisma", cat: "Backend", level: 88, years: "4a" },
+        { name: "Node.js / Auth JWT", cat: "Backend", level: 90, years: "5a" },
+        { name: "Docker / Linux", cat: "Cloud", level: 84, years: "4a" },
+      ],
+      certifications: [
+        { id: "c1", title: { es: "AWS Solutions Architect Associate", en: "AWS Solutions Architect Associate" }, issuer: "Amazon Web Services", category: "Cloud", date: "2026-03-15", credentialId: "AWS-SAA-9021", allowDownload: true, objectUrl: null },
+        { id: "c2", title: { es: "Arquitectura y Seguridad Web Moderna", en: "Modern Web Architecture & Security" }, issuer: "Linux Foundation", category: "Seguridad", date: "2025-11-02", credentialId: "LF-SEC-4410", allowDownload: false, objectUrl: null },
+      ],
+      messages: [
+        { id: "m1", isRead: false, sender: "Laura Gómez · Tech Recruiter @ FinTech", subject: "Entrevista Senior Full-Stack", body: "Revisamos tu dossier interactivo y tus certificaciones verificadas. ¿Coordinamos llamada esta semana?" },
+        { id: "m2", isRead: true, sender: "Carlos Méndez · VP Engineering @ DevCore", subject: "Consulta arquitectura Next.js", body: "Nos gustó mucho tu Showroom técnico. ¿Trabajas por proyecto B2B?" },
+      ],
+      nodes: STARTER_NODES(),
+      publishedNodes: STARTER_NODES(),
+    };
+
+    const CATALOG = [
+      { group: "Primitivos Libres", items: [
+        { type: "custom_code", name: "Código HTML/CSS", icon: "</>" },
+        { type: "free_text", name: "Texto Editorial", icon: "Aa" },
+        { type: "free_card", name: "Tarjeta Libre", icon: "□" },
+        { type: "free_button", name: "Botón CTA", icon: "↗" },
+        { type: "free_badge", name: "Insignia", icon: "◆" },
+        { type: "free_divider", name: "Divisor //", icon: "—" },
+      ]},
+      { group: "Widgets Conectados", items: [
+        { type: "widget_hero", name: "Hero Dossier", icon: "00" },
+        { type: "widget_projects", name: "Showroom", icon: "01" },
+        { type: "widget_timeline", name: "Trayectoria", icon: "02" },
+        { type: "widget_skills", name: "Stack Skills", icon: "03" },
+        { type: "widget_certs", name: "Bóveda PDF", icon: "04" },
+        { type: "widget_contact", name: "Contacto", icon: "05" },
+      ]},
+    ];
+
+    function showToast(msg) {
+      const el = document.getElementById("toast");
+      el.textContent = msg;
+      el.classList.remove("hidden");
+      clearTimeout(el._t);
+      el._t = setTimeout(() => el.classList.add("hidden"), 2500);
+    }
+
+    function setAccent(accent) {
+      document.documentElement.setAttribute("data-accent", accent);
+      document.querySelectorAll("[data-accent-pick]").forEach((b) => b.classList.toggle("is-selected", b.dataset.accentPick === accent));
+      if (state.activeView === "studio") renderInspector();
+    }
+
+    function switchView(view) {
+      state.activeView = view;
+      ["public", "studio", "admin", "login"].forEach((v) => document.getElementById("view-" + v).classList.toggle("hidden", v !== view));
+      document.querySelectorAll(".hdr-link").forEach((b) => b.classList.toggle("active", b.dataset.view === view));
+      if (view === "public") renderPublic();
+      if (view === "studio") { renderPalette(); renderStudio(); }
+      if (view === "admin") renderAdmin();
+    }
+
+    document.querySelectorAll(".hdr-link").forEach((b) => b.addEventListener("click", () => switchView(b.dataset.view)));
+    document.getElementById("globalLocaleBtn").addEventListener("click", () => {
+      state.locale = state.locale === "es" ? "en" : "es";
+      document.getElementById("globalLocaleBtn").textContent = state.locale.toUpperCase();
+      if (state.activeView === "public") renderPublic();
+      if (state.activeView === "studio") renderStudio();
+    });
+    document.getElementById("globalThemeBtn").addEventListener("click", () => {
+      state.light = !state.light;
+      document.body.classList.toggle("light", state.light);
+      document.getElementById("globalThemeBtn").textContent = state.light ? "Bone Paper" : "Obsidian";
+    });
+
+    /* ==================== RENDER PÚBLICO ==================== */
+    function renderPublic() {
+      const es = state.locale === "es";
+      document.getElementById("pubVerTop").textContent = `v${state.publishedVersion}.0`;
+      const container = document.getElementById("publicWidgetsContainer");
+      const ordered = [...state.publishedNodes].sort((a, b) => a.mobileOrder - b.mobileOrder);
+      container.innerHTML = "";
+
+      if (ordered.length === 0) {
+        container.innerHTML = `<div class="panel"><p class="muted">El lienzo publicado está vacío. Agrega bloques en 02 Studio Lienzo y presiona Publicar.</p></div>`;
+        return;
+      }
+
+      ordered.forEach((node) => {
+        const sec = document.createElement("section");
+        if (node.type === "custom_code") {
+          sec.className = "section-block";
+          const wrap = document.createElement("div");
+          wrap.className = "panel";
+          wrap.style.borderRadius = (node.radius ?? 2) + "px";
+          mountShadowCode(wrap, node.codeHtml || "", node.codeCss || "");
+          sec.appendChild(wrap);
+        } else if (node.type === "free_text" || node.type === "free_card") {
+          sec.className = "section-block";
+          const txt = es ? (node.textEs || "Bloque editorial libre") : (node.textEn || "Custom editorial block");
+          sec.innerHTML = `<div class="panel" style="border-radius:${node.radius ?? 2}px"><p class="serif" style="margin:0; font-size:1.45rem; font-style:italic;">“${txt}”</p></div>`;
+        } else if (node.type === "free_button") {
+          sec.style.paddingBlock = "10px";
+          sec.innerHTML = `<a href="#sec-contact" class="btn btn-solid">${es ? (node.textEs || "Contactar") : (node.textEn || "Get in touch")} ↗</a>`;
+        } else if (node.type === "free_badge") {
+          sec.style.paddingBlock = "8px";
+          sec.innerHTML = `<span class="ver-pill"><span class="ver-dot"></span>${es ? (node.textEs || "Disponible") : (node.textEn || "Available")}</span>`;
+        } else if (node.type === "free_divider") {
+          sec.innerHTML = `<div class="sheet-head" style="margin-block:14px;"><span class="sheet-head__n">//</span><span class="sheet-head__title">${node.textEs || "Sección"}</span><span class="sheet-head__lead"></span></div>`;
+        } else if (node.type === "widget_hero") {
+          sec.id = "sec-hero"; sec.className = "hero";
+          const role = es ? state.profile.roleEs : state.profile.roleEn;
+          const bio = es ? state.profile.bioEs : state.profile.bioEn;
+          const dossierHtml = state.dossierTab === "specs"
+            ? `
+              <div class="spec-row"><span class="spec-k">Ubicación</span><span>${state.profile.location}</span></div>
+              <div class="spec-row"><span class="spec-k">Idiomas</span><span class="mono">ES · EN</span></div>
+              <div class="spec-row"><span class="spec-k">Stack</span><span class="mono">TS · Next · PG</span></div>
+              <div class="spec-row"><span class="spec-k">Estado</span><span style="color:var(--sun);">${es ? "Disponible" : "Open"}</span></div>
+            `
+            : `<p class="serif" style="margin:0 0 10px; font-style:italic; font-size:1.1rem;">“Arquitectura limpia, ejecución medible.”</p><p class="dim" style="margin:0; font-size:0.84rem;">Cada bloque de esta web es editable desde el Control Center y el Studio de Lienzo Libre.</p>`;
+          sec.innerHTML = `
+            <div class="hero-glow"></div><div class="hero-halo"></div>
+            <div class="hero-stage">
+              <div>
+                <div class="mono" style="font-size:0.66rem; letter-spacing:0.18em; color:var(--sun); text-transform:uppercase; margin-bottom:12px;">// Dossier Profesional</div>
+                <h1 class="hero-name">${state.profile.name}</h1>
+                <p class="serif" style="font-style:italic; font-size:1.35rem; margin:12px 0 0;">${role}</p>
+                <p class="dim" style="margin:14px 0 0; max-width:54ch;">${bio}</p>
+                ${node.showVitals !== false ? `
+                  <div class="vitals">
+                    <div class="vital"><span class="vital__n">5+</span><span class="vital__l">Años Exp.</span></div>
+                    <div class="vital"><span class="vital__n">${state.projects.length}</span><span class="vital__l">Showroom</span></div>
+                    <div class="vital"><span class="vital__n">${state.certifications.length}</span><span class="vital__l">PDF Certs</span></div>
+                  </div>
+                ` : ""}
+              </div>
+              <div class="panel" style="border-color:var(--line-strong);">
+                <div class="row" style="border-bottom:1px solid var(--line-soft); padding-bottom:8px; margin-bottom:10px;">
+                  <button class="btn btn-xs ${state.dossierTab === "specs" ? "active-ctrl" : ""}" onclick="state.dossierTab='specs'; renderPublic();">Ficha</button>
+                  <button class="btn btn-xs ${state.dossierTab === "manifesto" ? "active-ctrl" : ""}" onclick="state.dossierTab='manifesto'; renderPublic();">Enfoque</button>
+                </div>
+                ${dossierHtml}
+              </div>
+            </div>
+          `;
+        } else if (node.type === "widget_projects") {
+          sec.id = "sec-projects"; sec.className = "section-block";
+          const proj = state.projects[state.activeProjectIdx] || state.projects[0];
+          sec.innerHTML = `
+            <div class="sheet-head"><span class="sheet-head__n">01 //</span><span class="sheet-head__title">${es ? "Showroom de Proyectos" : "Project Showroom"}</span><span class="sheet-head__lead"></span><span class="sheet-head__glyph">WORK</span></div>
+            <div class="showroom-frame">
+              <div class="showroom-visual">
+                <div class="row" style="justify-content:space-between;"><span class="mono" style="font-size:0.66rem; color:var(--sun);">${proj.code}</span><span class="mono muted" style="font-size:0.66rem;">${proj.metric}</span></div>
+                <div class="showroom-mock">${proj.previewLines.map((l) => `<div class="mono dim" style="font-size:0.72rem; padding:2px 0;">&gt; ${l}</div>`).join("")}</div>
+              </div>
+              <div class="showroom-copy">
+                <div>
+                  <span class="mono muted" style="font-size:0.64rem;">${proj.tags.join(" · ")}</span>
+                  <h3 class="serif" style="margin:6px 0 8px; font-size:1.6rem; font-weight:400;">${proj.title}</h3>
+                  <p class="dim" style="margin:0; font-size:0.86rem;">${es ? proj.summaryEs : proj.summaryEn}</p>
+                </div>
+                <div class="row"><button class="btn btn-solid btn-xs" onclick="showToast('Demo en vivo')">Demo</button><button class="btn btn-xs" onclick="showToast('Repositorio GitHub')">Código</button></div>
+              </div>
+            </div>
+            <div class="strip">
+              ${state.projects.map((p, idx) => `<button class="strip-btn ${idx === state.activeProjectIdx ? "active" : ""}" onclick="state.activeProjectIdx=${idx}; renderPublic();"><div class="mono" style="font-size:0.6rem; color:var(--sun);">${p.code}</div><div style="font-weight:500; margin-top:2px;">${p.title}</div></button>`).join("")}
+            </div>
+          `;
+        } else if (node.type === "widget_timeline") {
+          sec.id = "sec-timeline"; sec.className = "section-block";
+          sec.innerHTML = `
+            <div class="sheet-head"><span class="sheet-head__n">02 //</span><span class="sheet-head__title">${es ? "Trayectoria" : "Timeline"}</span><span class="sheet-head__lead"></span></div>
+            <div class="timeline-row ${state.expandedExp.exp1 ? "open" : ""}" onclick="state.expandedExp.exp1=!state.expandedExp.exp1; renderPublic();">
+              <div class="row" style="justify-content:space-between;"><strong>Senior Full-Stack · TechLab</strong><span class="mono muted" style="font-size:0.72rem;">2024 — ACTUAL</span></div>
+              ${state.expandedExp.exp1 ? `<p class="dim" style="margin:6px 0 0; font-size:0.86rem;">Arquitectura Next.js 16 + PostgreSQL y liderazgo técnico.</p>` : ""}
+            </div>
+            <div class="timeline-row ${state.expandedExp.exp2 ? "open" : ""}" onclick="state.expandedExp.exp2=!state.expandedExp.exp2; renderPublic();">
+              <div class="row" style="justify-content:space-between;"><strong>Software Engineer · CloudCorp</strong><span class="mono muted" style="font-size:0.72rem;">2021 — 2024</span></div>
+              ${state.expandedExp.exp2 ? `<p class="dim" style="margin:6px 0 0; font-size:0.86rem;">Microservicios Docker, APIs REST y CI/CD.</p>` : ""}
+            </div>
+          `;
+        } else if (node.type === "widget_skills") {
+          sec.id = "sec-skills"; sec.className = "section-block";
+          const cats = ["Todas", "Frontend", "Backend", "Cloud"];
+          const list = state.skills.filter((s) => state.filters.skillCat === "Todas" || s.cat === state.filters.skillCat);
+          sec.innerHTML = `
+            <div class="sheet-head"><span class="sheet-head__n">03 //</span><span class="sheet-head__title">${es ? "Stack Técnico" : "Tech Stack"}</span><span class="sheet-head__lead"></span></div>
+            <div class="row" style="margin-bottom:14px;">${cats.map((c) => `<button class="chip ${state.filters.skillCat === c ? "active" : ""}" onclick="state.filters.skillCat='${c}'; renderPublic();">${c}</button>`).join("")}</div>
+            <div class="grid-2">${list.map((s) => {
+              const filled = Math.round(s.level / 10);
+              return `<div class="panel" style="padding:12px;"><div class="row" style="justify-content:space-between;"><strong>${s.name}</strong><span class="mono muted" style="font-size:0.7rem;">${s.level}%</span></div><div class="segments">${Array.from({ length: 10 }, (_, i) => `<div class="seg ${i < filled ? (i >= 8 ? "on hi" : "on") : ""}"></div>`).join("")}</div></div>`;
+            }).join("")}</div>
+          `;
+        } else if (node.type === "widget_certs") {
+          sec.id = "sec-certs"; sec.className = "section-block";
+          const cats = ["Todas", ...Array.from(new Set(state.certifications.map((c) => c.category).filter(Boolean)))];
+          const certs = state.certifications.filter((c) => {
+            if (c.isVisible === false) return false;
+            const title = (c.title[state.locale] || c.title.es || "").toLowerCase();
+            const q = state.filters.certQuery.toLowerCase();
+            const catOk = state.filters.certCat === "Todas" || c.category === state.filters.certCat;
+            return catOk && (!q || title.includes(q) || c.issuer.toLowerCase().includes(q));
+          });
+          sec.innerHTML = `
+            <div class="sheet-head"><span class="sheet-head__n">04 //</span><span class="sheet-head__title">${es ? "Certificaciones y Documentos PDF" : "PDF Certifications & Extras"}</span><span class="sheet-head__lead"></span></div>
+            <div class="row" style="justify-content:space-between; margin-bottom:14px;">
+              <div class="row">${cats.map((cat) => `<button class="chip ${state.filters.certCat === cat ? "active" : ""}" onclick="state.filters.certCat='${cat}'; renderPublic();">${cat}</button>`).join("")}</div>
+              <input class="input" style="max-width:220px;" placeholder="Filtrar..." value="${state.filters.certQuery}" oninput="state.filters.certQuery=this.value; renderPublic();" />
+            </div>
+            <div class="grid-2">${certs.map((c) => `
+              <div class="cert-card">
+                <div>
+                  <div class="mono" style="font-size:0.62rem; color:var(--sun);">${c.category} · ${c.date}</div>
+                  <strong style="display:block; margin-top:3px;">${c.title[state.locale] || c.title.es}</strong>
+                  <span class="muted mono" style="font-size:0.7rem;">${c.issuer} · ${c.credentialId}</span>
+                </div>
+                <button class="btn btn-xs" onclick="openPdfModal('${c.id}')">Abrir PDF</button>
+              </div>
+            `).join("")}</div>
+          `;
+        } else if (node.type === "widget_cert_spotlight") {
+          sec.className = "section-block";
+          const c = state.certifications.find((x) => x.id === node.certId) || state.certifications[0];
+          if (!c) return;
+          sec.innerHTML = `
+            <div class="panel" style="border-color:var(--sun); display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:14px;">
+              <div>
+                <span class="mono" style="font-size:0.64rem; color:var(--sun); text-transform:uppercase;">★ Destacado · ${c.category} · ${c.date}</span>
+                <h3 class="serif" style="margin:4px 0 2px; font-weight:400; font-size:1.35rem;">${c.title[state.locale] || c.title.es}</h3>
+                <div class="mono muted" style="font-size:0.74rem;">${c.issuer} · ${c.credentialId}</div>
+              </div>
+              <button class="btn btn-solid btn-sm" onclick="openPdfModal('${c.id}')">Ver Documento PDF</button>
+            </div>
+          `;
+        } else if (node.type === "widget_contact") {
+          sec.id = "sec-contact"; sec.className = "section-block";
+          sec.innerHTML = `
+            <div class="sheet-head"><span class="sheet-head__n">05 //</span><span class="sheet-head__title">${es ? "Contacto Directo" : "Direct Contact"}</span><span class="sheet-head__lead"></span></div>
+            <form onsubmit="submitPublicContact(event)" class="panel">
+              <div class="grid-2">
+                <div><label>Nombre</label><input class="input" id="pubContactName" required /></div>
+                <div><label>Correo</label><input class="input" id="pubContactEmail" type="email" required /></div>
+                <div><label>Asunto</label><input class="input" id="pubContactSubject" required /></div>
+                <div><label>Mensaje</label><input class="input" id="pubContactMsg" required /></div>
+              </div>
+              <div style="margin-top:12px;"><button class="btn btn-solid btn-sm" type="submit">${es ? "Enviar Mensaje" : "Send Message"}</button></div>
+            </form>
+          `;
+        }
+        container.appendChild(sec);
+      });
+    }
+
+    function submitPublicContact(e) {
+      e.preventDefault();
+      const id = "m" + Date.now();
+      state.messages.unshift({
+        id,
+        isRead: false,
+        sender: `${document.getElementById("pubContactName").value} (${document.getElementById("pubContactEmail").value})`,
+        subject: document.getElementById("pubContactSubject").value,
+        body: document.getElementById("pubContactMsg").value,
+      });
+      state.selectedMsgId = id;
+      e.target.reset();
+      showToast("Mensaje recibido en Control Center");
+    }
+
+    /* ==================== STUDIO IDE ==================== */
+    function pushHistory() {
+      state.history.push(JSON.stringify(state.nodes));
+      if (state.history.length > 30) state.history.shift();
+      state.redoStack = [];
+      document.getElementById("autoSaveLabel").textContent = "Borrador guardado";
+    }
+
+    function setLeftDock(tab) {
+      state.leftDock = tab;
+      document.getElementById("leftTabInsert").classList.toggle("active", tab === "insert");
+      document.getElementById("leftTabLayers").classList.toggle("active", tab === "layers");
+      document.getElementById("leftDockInsert").classList.toggle("hidden", tab !== "insert");
+      document.getElementById("leftDockLayers").classList.toggle("hidden", tab !== "layers");
+    }
+
+    function setInspTab(tab) {
+      state.inspTab = tab;
+      document.querySelectorAll("[data-insp-tab]").forEach((b) => b.classList.toggle("active", b.dataset.inspTab === tab));
+      renderInspector();
+    }
+
+    function setStudioZoom(z) {
+      state.studioZoom = z;
+      document.getElementById("zoom75Btn").classList.toggle("active-ctrl", z === 0.75);
+      document.getElementById("zoom100Btn").classList.toggle("active-ctrl", z === 1);
+      document.getElementById("artboardWrap").style.transform = `scale(${z})`;
+    }
+
+    function toggleGrid() {
+      state.showGrid = !state.showGrid;
+      document.getElementById("toggleGridBtn").classList.toggle("active-ctrl", state.showGrid);
+      document.getElementById("canvasStage").classList.toggle("show-grid", state.showGrid);
+    }
+
+    function renderPalette() {
+      const q = (document.getElementById("paletteSearch").value || "").toLowerCase();
+      const el = document.getElementById("paletteContainer");
+      const staticHtml = CATALOG.map((grp) => {
+        const items = grp.items.filter((i) => !q || i.name.toLowerCase().includes(q));
+        if (!items.length) return "";
+        return `
+          <div>
+            <p class="palette-group-title"><span>${grp.group}</span><span>${items.length}</span></p>
+            <div class="palette-grid">
+              ${items.map((it) => `
+                <button class="palette-tile" onclick="addNode('${it.type}')">
+                  <span class="palette-tile__icon">${it.icon}</span>
+                  <span class="palette-tile__name">${it.name}</span>
+                </button>
+              `).join("")}
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      const filteredCerts = state.certifications.filter((c) => !q || (c.title.es || "").toLowerCase().includes(q) || c.category.toLowerCase().includes(q));
+      const certsHtml = filteredCerts.length ? `
+        <div>
+          <p class="palette-group-title"><span>Tus PDFs y Extras</span><span>${filteredCerts.length}</span></p>
+          <div style="display:grid; gap:6px;">
+            ${filteredCerts.map((c) => `
+              <button class="palette-tile" style="flex-direction:row; align-items:center; justify-content:space-between;" onclick="placeCertInStudio('${c.id}', false)">
+                <span class="palette-tile__name" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">📄 ${c.title.es}</span>
+                <span class="palette-tile__icon">+</span>
+              </button>
+            `).join("")}
+          </div>
+        </div>
+      ` : "";
+
+      el.innerHTML = staticHtml + certsHtml;
+    }
+
+    function placeCertInStudio(certId, navigateToStudio = true) {
+      const c = state.certifications.find((x) => x.id === certId);
+      if (!c) return;
+      pushHistory();
+      const id = "n-" + Math.random().toString(36).slice(2, 7);
+      state.nodes.push({
+        id,
+        type: "widget_cert_spotlight",
+        label: `📄 ${c.title.es.slice(0, 22)}`,
+        certId: c.id,
+        x: 24,
+        y: 32 + (state.nodes.length % 5) * 32,
+        w: 440,
+        h: 112,
+        z: state.nodes.length + 1,
+        surface: "raised",
+        border: "accent",
+        radius: 2,
+        padding: 14,
+        locked: false,
+        mobileOrder: state.nodes.length + 1,
+        mobileVisible: true,
+        textEs: "",
+        textEn: "",
+      });
+      state.selectedNodeId = id;
+      if (navigateToStudio) {
+        switchView("studio");
+        showToast(`Tarjeta colocada en Studio: "${c.title.es}"`);
+      } else {
+        renderStudio();
+        showToast(`"${c.title.es}" colocado en el lienzo`);
+      }
+    }
+
+    function ensureGalleryInStudio() {
+      const exists = state.nodes.some((n) => n.type === "widget_certs");
+      if (!exists) {
+        addNode("widget_certs");
+        showToast("Galería de Certificaciones agregada al Studio");
+      } else {
+        const g = state.nodes.find((n) => n.type === "widget_certs");
+        state.selectedNodeId = g.id;
+        switchView("studio");
+        showToast("Tu galería ya está en el Studio (seleccionada)");
+      }
+    }
+
+    function getCvTemplateContext() {
+      const es = state.locale === "es";
+      return {
+        profile: {
+          fullName: state.profile.name,
+          headline: es ? state.profile.roleEs : state.profile.roleEn,
+          bio: es ? state.profile.bioEs : state.profile.bioEn,
+          location: state.profile.location,
+          email: "contacto@alexrivera.dev",
+          availability: es ? "Disponible" : "Open",
+        },
+        stats: {
+          projectsCount: state.projects.length,
+          skillsCount: state.skills.length,
+          certificationsCount: state.certifications.length,
+          experiencesCount: 2,
+        },
+        projects: state.projects.map((p) => ({
+          title: p.title,
+          summary: es ? p.summaryEs : p.summaryEn,
+          tags: p.tags.join(", "),
+        })),
+        skills: state.skills.map((s) => ({ name: s.name, category: s.cat, level: s.level })),
+        certifications: state.certifications.map((c) => ({
+          title: c.title[state.locale] || c.title.es,
+          issuer: c.issuer,
+          category: c.category,
+          issueDate: c.date,
+        })),
+      };
+    }
+
+    function escapeHtmlStr(val) {
+      return String(val ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+
+    function resolvePathVal(root, pathStr) {
+      return String(pathStr || "").trim().split(".").reduce((acc, k) => (acc && k !== "__proto__" && k !== "constructor" ? acc[k] : undefined), root);
+    }
+
+    function interpolateSafeTemplate(rawHtml) {
+      const clean = String(rawHtml || "")
+        .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
+        .replace(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, "")
+        .replace(/(href|src)\s*=\s*(["'])\s*javascript:[^"']*\2/gi, "$1=$2#$2");
+      const scope = { cv: getCvTemplateContext() };
+      const withLoops = clean.replace(/\{\{#each\s+([a-zA-Z0-9_.]+)\s*\}\}([\s\S]*?)\{\{\/each\}\}/g, (_, colPath, inner) => {
+        const arr = resolvePathVal(scope, colPath);
+        if (!Array.isArray(arr)) return "";
+        return arr.map((item) => inner.replace(/\{\{\s*([a-zA-Z0-9_.]+)\s*\}\}/g, (__, vp) => {
+          if (vp.startsWith("cv.")) return escapeHtmlStr(resolvePathVal(scope, vp));
+          return escapeHtmlStr(resolvePathVal(item, vp));
+        })).join("");
+      });
+      return withLoops.replace(/\{\{\s*([a-zA-Z0-9_.]+)\s*\}\}/g, (_, vp) => {
+        const v = resolvePathVal(scope, vp);
+        return v === undefined || v === null || typeof v === "object" ? "" : escapeHtmlStr(v);
+      });
+    }
+
+    function mountShadowCode(hostEl, rawHtml, rawCss) {
+      const safeHtml = interpolateSafeTemplate(rawHtml);
+      const root = hostEl.shadowRoot || hostEl.attachShadow({ mode: "open" });
+      root.innerHTML = `<style>:host{display:block;color:var(--ink);font-family:var(--f-sans);}${rawCss || ""}</style>${safeHtml}`;
+    }
+
+    function addNode(type) {
+      pushHistory();
+      const id = "n-" + Math.random().toString(36).slice(2, 7);
+      const isCompact = type === "free_button" || type === "free_badge" || type === "free_divider";
+      const isCode = type === "custom_code";
+      const starter = CODE_SNIPPETS.dataCard;
+      state.nodes.push({
+        id, type, label: isCode ? "</> Bloque Código" : type.replace("_", " "),
+        x: 32, y: 32 + (state.nodes.length % 6) * 32,
+        w: isCompact ? 220 : isCode ? 460 : 380, h: isCompact ? 56 : isCode ? 152 : 140, z: state.nodes.length + 1,
+        surface: "raised", border: "soft", radius: 2, padding: 14, locked: false,
+        mobileOrder: state.nodes.length + 1, mobileVisible: true,
+        textEs: "Nuevo bloque editorial", textEn: "New editorial block",
+        codeHtml: isCode ? starter.html : "",
+        codeCss: isCode ? starter.css : "",
+        showVitals: true,
+      });
+      state.selectedNodeId = id;
+      if (isCode && state.studioSurface === "visual") {
+        state.studioSurface = "split";
+      }
+      if (isCode) {
+        state.ideFile = "html";
+      }
+      renderStudio();
+    }
+
+    function clearCanvas() { pushHistory(); state.nodes = []; state.selectedNodeId = null; renderStudio(); }
+    function resetStarterCanvas() { pushHistory(); state.nodes = STARTER_NODES(); state.selectedNodeId = "n-hero"; renderStudio(); }
+
+    function duplicateSelected() {
+      const sel = state.nodes.find((n) => n.id === state.selectedNodeId);
+      if (!sel) return;
+      pushHistory();
+      const copyNode = JSON.parse(JSON.stringify(sel));
+      copyNode.id = "n-" + Math.random().toString(36).slice(2, 7);
+      copyNode.x += 24;
+      copyNode.y += 24;
+      copyNode.z += 1;
+      copyNode.mobileOrder = state.nodes.length + 1;
+      state.nodes.push(copyNode);
+      state.selectedNodeId = copyNode.id;
+      renderStudio();
+    }
+
+    function renderNodePreview(node) {
+      const es = state.locale === "es";
+      if (node.type === "custom_code") {
+        return `<div class="shadow-host" data-shadow-node="${node.id}" style="margin-top:6px;"></div>`;
+      }
+      if (node.type === "free_text" || node.type === "free_card") {
+        return `<p class="serif" style="margin:4px 0 0; font-style:italic; font-size:1.05rem;">“${es ? (node.textEs || "Texto libre") : (node.textEn || "Free text")}”</p>`;
+      }
+      if (node.type === "free_button") {
+        return `<div style="margin-top:4px;"><span class="btn btn-solid btn-xs">${es ? (node.textEs || "Acción") : (node.textEn || "Action")} ↗</span></div>`;
+      }
+      if (node.type === "free_badge") {
+        return `<div style="margin-top:4px;"><span class="ver-pill"><span class="ver-dot"></span>${node.textEs || "Disponible"}</span></div>`;
+      }
+      if (node.type === "free_divider") {
+        return `<div style="display:flex; align-items:center; gap:8px; margin-top:8px;"><span class="mono" style="font-size:10px; color:var(--sun);">//</span><span style="flex:1; height:1px; background:var(--line);"></span></div>`;
+      }
+      if (node.type === "widget_hero") {
+        return `
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+            <div>
+              <div style="font-size:1.45rem; font-weight:500; letter-spacing:-0.02em;">${state.profile.name}</div>
+              <div class="serif muted" style="font-style:italic; font-size:0.9rem;">${es ? state.profile.roleEs : state.profile.roleEn}</div>
+            </div>
+            <div class="ver-pill"><span class="ver-dot"></span>Hero Dossier</div>
+          </div>
+          ${node.showVitals !== false ? `<div style="display:grid; grid-template-columns:repeat(3,1fr); border:1px solid var(--line-soft); margin-top:10px; font-family:var(--f-mono); font-size:10px;"><div style="padding:6px;">5+ EXP</div><div style="padding:6px; border-left:1px solid var(--line-soft);">${state.projects.length} PROY</div><div style="padding:6px; border-left:1px solid var(--line-soft);">${state.certifications.length} PDF</div></div>` : ""}
+        `;
+      }
+      if (node.type === "widget_projects") {
+        return `<div class="grid-2" style="margin-top:6px;">${state.projects.slice(0, 2).map((p) => `<div style="border:1px solid var(--line-soft); padding:8px; background:var(--paper);"><div class="mono" style="font-size:10px; color:var(--sun);">${p.code}</div><div style="font-weight:500; font-size:0.82rem;">${p.title}</div></div>`).join("")}</div>`;
+      }
+      if (node.type === "widget_timeline") {
+        return `<div style="margin-top:8px; border-left:1px solid var(--sun); padding-left:10px; font-size:0.78rem;"><strong>TechLab · Senior Full-Stack</strong><div class="mono muted" style="font-size:10px;">2024 — ACTUAL</div></div>`;
+      }
+      if (node.type === "widget_skills") {
+        return `<div style="margin-top:8px; display:grid; gap:6px;">${state.skills.slice(0, 2).map((s) => `<div><div style="display:flex; justify-content:space-between; font-size:11px;"><span>${s.name}</span><span class="mono">${s.level}%</span></div><div class="segments">${Array.from({ length: 10 }, (_, i) => `<div class="seg ${i < Math.round(s.level / 10) ? "on" : ""}"></div>`).join("")}</div></div>`).join("")}</div>`;
+      }
+      if (node.type === "widget_certs") {
+        return `<div class="grid-2" style="margin-top:6px;">${state.certifications.slice(0, 2).map((c) => `<div style="border:1px solid var(--line-soft); padding:8px; display:flex; justify-content:space-between; align-items:center;"><span style="font-size:0.78rem;">${c.title.es}</span><span class="mono" style="font-size:10px; color:var(--sun);">PDF</span></div>`).join("")}</div>`;
+      }
+      if (node.type === "widget_cert_spotlight") {
+        const c = state.certifications.find((x) => x.id === node.certId) || state.certifications[0];
+        if (!c) return `<div class="muted" style="font-size:0.78rem; margin-top:6px;">Sin PDF seleccionado</div>`;
+        return `<div style="margin-top:6px; display:flex; justify-content:space-between; align-items:center; gap:8px;"><div><div class="mono" style="font-size:10px; color:var(--sun);">★ ${c.category}</div><strong style="font-size:0.84rem;">${c.title.es}</strong><div class="mono muted" style="font-size:10px;">${c.issuer}</div></div><span class="btn btn-solid btn-xs">PDF</span></div>`;
+      }
+      if (node.type === "widget_contact") {
+        return `<div style="margin-top:8px; display:grid; grid-template-columns:1fr 1fr auto; gap:8px;"><div class="input" style="font-size:11px;">Nombre</div><div class="input" style="font-size:11px;">Correo</div><span class="btn btn-solid btn-xs">Enviar</span></div>`;
+      }
+      return "";
+    }
+
+    function showSnapGuides(stage, activeNode) {
+      stage.querySelectorAll(".snap-guide-v, .snap-guide-h").forEach((g) => g.remove());
+      state.nodes.forEach((other) => {
+        if (other.id === activeNode.id) return;
+        if (Math.abs(other.x - activeNode.x) <= 8) {
+          const g = document.createElement("div"); g.className = "snap-guide-v"; g.style.left = other.x + "px"; stage.appendChild(g);
+        }
+        if (Math.abs(other.y - activeNode.y) <= 8) {
+          const g = document.createElement("div"); g.className = "snap-guide-h"; g.style.top = other.y + "px"; stage.appendChild(g);
+        }
+      });
+    }
+
+    function renderSelectionHud() {
+      const hud = document.getElementById("selectionHud");
+      const sel = state.nodes.find((n) => n.id === state.selectedNodeId);
+      if (!sel) {
+        hud.innerHTML = `<span class="mono muted" style="font-size:0.64rem;">Selecciona un bloque para manipularlo</span>`;
+        document.getElementById("statusSelected").textContent = "Sin selección";
+        return;
+      }
+      document.getElementById("statusSelected").textContent = `${sel.label} (${sel.x}, ${sel.y} · ${sel.w}×${sel.h})`;
+      hud.innerHTML = `
+        <span class="mono" style="font-size:0.64rem; color:var(--sun);">${sel.label}</span>
+        <span style="width:1px; height:14px; background:var(--line);"></span>
+        <button class="btn btn-xs" onclick="duplicateSelected()">Duplicar</button>
+        <button class="btn btn-xs" onclick="updateSel('z', ${(sel.z || 1) + 1})">↑ Frente</button>
+        <button class="btn btn-xs" onclick="updateSel('locked', ${!sel.locked})">${sel.locked ? "🔓 Desbloq" : "🔒 Bloq"}</button>
+        <button class="btn btn-sun btn-xs" onclick="deleteSel()">Eliminar</button>
+      `;
+    }
+
+    function renderStudio() {
+      const stage = document.getElementById("canvasStage");
+      const isMob = state.studioMode === "mobile";
+      stage.classList.toggle("mobile-mode", isMob);
+      document.getElementById("studioRuler").classList.toggle("hidden", isMob);
+      document.getElementById("modeDesktopBtn").classList.toggle("active-ctrl", !isMob);
+      document.getElementById("modeMobileBtn").classList.toggle("active-ctrl", isMob);
+      document.getElementById("statusSize").textContent = isMob ? "Artboard: 390px (Apilado)" : "Artboard: 960×920px";
+      document.getElementById("statusNodes").textContent = `Nodos: ${state.nodes.length}`;
+      stage.innerHTML = "";
+
+      const list = isMob
+        ? [...state.nodes].filter((n) => n.mobileVisible).sort((a, b) => a.mobileOrder - b.mobileOrder)
+        : state.nodes;
+
+      list.forEach((node) => {
+        const el = document.createElement("div");
+        el.className = "canvas-node" + (state.selectedNodeId === node.id ? " selected" : "") + (node.locked ? " locked" : "");
+        const bgMap = { transparent: "transparent", paper: "var(--paper)", raised: "var(--paper-raised)", soft: "var(--paper-soft)" };
+        const borderMap = { none: "transparent", soft: "var(--line-soft)", strong: "var(--line-strong)", accent: "var(--sun)" };
+        el.style.background = bgMap[node.surface || "raised"] || "var(--paper-raised)";
+        if (state.selectedNodeId !== node.id) el.style.borderColor = borderMap[node.border || "soft"];
+        el.style.borderRadius = (node.radius ?? 2) + "px";
+        el.style.padding = (node.padding ?? 14) + "px";
+
+        if (!isMob) {
+          el.style.left = node.x + "px";
+          el.style.top = node.y + "px";
+          el.style.width = node.w + "px";
+          el.style.height = node.h + "px";
+          el.style.zIndex = node.z;
+        }
+        el.innerHTML = `
+          <div style="display:flex; justify-content:space-between; font-family:var(--f-mono); font-size:10px; color:var(--ink-faint);">
+            <span>${node.locked ? "🔒 " : ""}${node.label}</span>
+            <span>${isMob ? `#${node.mobileOrder}` : `${node.w}×${node.h}`}</span>
+          </div>
+          ${renderNodePreview(node)}
+          <div class="resize-handle" title="Redimensionar"></div>
+        `;
+
+        el.querySelector(".resize-handle").addEventListener("pointerdown", (ev) => {
+          ev.stopPropagation();
+          if (isMob || node.locked) return;
+          pushHistory();
+          state.selectedNodeId = node.id;
+          const sx = ev.clientX, sy = ev.clientY, ow = node.w, oh = node.h;
+          const zf = state.studioZoom || 1;
+          function onResize(mv) {
+            node.w = Math.max(120, Math.round((ow + (mv.clientX - sx) / zf) / 8) * 8);
+            node.h = Math.max(48, Math.round((oh + (mv.clientY - sy) / zf) / 8) * 8);
+            el.style.width = node.w + "px";
+            el.style.height = node.h + "px";
+          }
+          function onUp() {
+            window.removeEventListener("pointermove", onResize);
+            window.removeEventListener("pointerup", onUp);
+            renderStudio();
+          }
+          window.addEventListener("pointermove", onResize);
+          window.addEventListener("pointerup", onUp);
+        });
+
+        el.addEventListener("pointerdown", (ev) => {
+          state.selectedNodeId = node.id;
+          if (isMob || node.locked) { renderStudio(); return; }
+          pushHistory();
+          const sx = ev.clientX, sy = ev.clientY, ox = node.x, oy = node.y;
+          const zf = state.studioZoom || 1;
+          function onMove(mv) {
+            node.x = Math.max(0, Math.round((ox + (mv.clientX - sx) / zf) / 8) * 8);
+            node.y = Math.max(0, Math.round((oy + (mv.clientY - sy) / zf) / 8) * 8);
+            el.style.left = node.x + "px";
+            el.style.top = node.y + "px";
+            showSnapGuides(stage, node);
+          }
+          function onUp() {
+            stage.querySelectorAll(".snap-guide-v, .snap-guide-h").forEach((g) => g.remove());
+            window.removeEventListener("pointermove", onMove);
+            window.removeEventListener("pointerup", onUp);
+            renderStudio();
+          }
+          window.addEventListener("pointermove", onMove);
+          window.addEventListener("pointerup", onUp);
+        });
+
+        stage.appendChild(el);
+        const shadowHost = el.querySelector(`[data-shadow-node="${node.id}"]`);
+        if (shadowHost) {
+          mountShadowCode(shadowHost, node.codeHtml || "", node.codeCss || "");
+        }
+      });
+
+      const studioApp = document.getElementById("view-studio");
+      studioApp.classList.toggle("visual-only", state.studioSurface === "visual");
+      studioApp.classList.toggle("ide-only", state.studioSurface === "ide");
+      document.getElementById("viewVisualBtn").classList.toggle("active-ctrl", state.studioSurface === "visual");
+      document.getElementById("viewSplitBtn").classList.toggle("active-ctrl", state.studioSurface === "split");
+      document.getElementById("viewIdeBtn").classList.toggle("active-ctrl", state.studioSurface === "ide");
+
+      renderLayers();
+      renderSelectionHud();
+      renderInspector();
+      renderIde();
+    }
+
+    function renderLayers() {
+      const sorted = [...state.nodes].sort((a, b) => a.mobileOrder - b.mobileOrder);
+      document.getElementById("layerCount").textContent = String(sorted.length);
+      document.getElementById("layersList").innerHTML = sorted.map((n) => `
+        <div class="layer-row ${state.selectedNodeId === n.id ? "selected" : ""}" onclick="state.selectedNodeId='${n.id}'; renderStudio();">
+          <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;">
+            <span class="mono faint" style="margin-right:4px;">#${n.mobileOrder}</span>${n.label}
+          </span>
+          <button class="layer-icon-btn" onclick="event.stopPropagation(); updateNode('${n.id}','mobileVisible', ${!n.mobileVisible})">${n.mobileVisible ? "👁" : "∅"}</button>
+          <button class="layer-icon-btn" onclick="event.stopPropagation(); updateNode('${n.id}','locked', ${!n.locked})">${n.locked ? "🔒" : "🔓"}</button>
+          <button class="layer-icon-btn" onclick="event.stopPropagation(); moveMobileOrder('${n.id}', -1)">↑</button>
+          <button class="layer-icon-btn" onclick="event.stopPropagation(); moveMobileOrder('${n.id}', 1)">↓</button>
+        </div>
+      `).join("");
+    }
+
+    function moveMobileOrder(id, delta) {
+      pushHistory();
+      const sorted = [...state.nodes].sort((a, b) => a.mobileOrder - b.mobileOrder);
+      const idx = sorted.findIndex((n) => n.id === id);
+      const swap = idx + delta;
+      if (swap < 0 || swap >= sorted.length) return;
+      const tmp = sorted[idx].mobileOrder;
+      sorted[idx].mobileOrder = sorted[swap].mobileOrder;
+      sorted[swap].mobileOrder = tmp;
+      renderStudio();
+    }
+
+    function alignSelected(mode) {
+      const sel = state.nodes.find((n) => n.id === state.selectedNodeId);
+      if (!sel || sel.locked) return;
+      pushHistory();
+      if (mode === "left") sel.x = 24;
+      if (mode === "center") sel.x = Math.max(0, Math.round((960 - sel.w) / 2 / 8) * 8);
+      if (mode === "right") sel.x = Math.max(0, 960 - sel.w - 24);
+      if (mode === "full") { sel.x = 24; sel.w = 912; }
+      renderStudio();
+    }
+
+    function renderInspector() {
+      const body = document.getElementById("inspectorBody");
+      if (state.inspTab === "theme") {
+        body.innerHTML = `
+          <div class="insp-section">
+            <p class="insp-title">Atmósfera Global</p>
+            <div style="display:grid; gap:6px;">
+              <button class="btn btn-xs" onclick="setAccent('amaterasu')">Amaterasu (#ce5e32)</button>
+              <button class="btn btn-xs" onclick="setAccent('void')">Void (#6daf8c)</button>
+              <button class="btn btn-xs" onclick="setAccent('cobalt')">Cobalt (#6ea5cf)</button>
+              <button class="btn btn-xs" onclick="setAccent('indigo')">Indigo (#9299d3)</button>
+            </div>
+          </div>
+          <div class="insp-section">
+            <p class="insp-title">Fuente Tipográfica Propia</p>
+            <p class="muted" style="font-size:0.74rem; margin:0 0 8px;">Sube .woff2, .ttf o .otf para aplicar tu fuente en vivo.</p>
+            <input type="file" id="customFontUpload" class="hidden" accept=".woff2,.ttf,.otf" onchange="handleFontUpload(event)" />
+            <button class="btn btn-sun btn-xs" style="width:100%;" onclick="document.getElementById('customFontUpload').click()">↑ Subir Fuente (.woff2/.ttf)</button>
+            <div class="mono muted" id="activeFontLabel" style="font-size:0.64rem; margin-top:6px;">Fuente: Fraunces + Space Grotesk</div>
+          </div>
+          <div class="insp-section">
+            <p class="insp-title">Polaridad de Fondo</p>
+            <button class="btn btn-solid btn-xs" style="width:100%;" onclick="document.getElementById('globalThemeBtn').click()">
+              Alternar Obsidian / Bone Paper
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      const sel = state.nodes.find((n) => n.id === state.selectedNodeId);
+      if (!sel) {
+        body.innerHTML = `<p class="muted" style="font-size:0.8rem;">Selecciona un bloque en el lienzo para inspeccionarlo.</p>`;
+        return;
+      }
+
+      if (state.inspTab === "content") {
+        body.innerHTML = `
+          <div class="insp-section">
+            <p class="insp-title">Identificador</p>
+            <label>Etiqueta en Capas</label>
+            <input class="input" value="${sel.label}" onchange="updateSel('label', this.value)" />
+          </div>
+          ${sel.type === "custom_code" ? `
+            <div class="insp-section">
+              <p class="insp-title">Código Fuente &amp; Variables</p>
+              <p class="muted" style="font-size:0.78rem; margin:0 0 10px;">
+                Componente HTML + CSS aislado en Shadow DOM con variables <code>{{cv.*}}</code> conectadas a tus datos.
+              </p>
+              <button class="btn btn-sun btn-xs" style="width:100%;" onclick="setStudioSurface('split'); setIdeFile('html');">Abrir en Editor IDE &lt;/&gt;</button>
+            </div>
+          ` : sel.type.startsWith("free_") ? `
+            <div class="insp-section">
+              <p class="insp-title">Texto Bilingüe</p>
+              <label>Español (ES)</label>
+              <textarea class="textarea" rows="2" onchange="updateSel('textEs', this.value)">${sel.textEs || ""}</textarea>
+              <label style="margin-top:8px;">English (EN)</label>
+              <textarea class="textarea" rows="2" onchange="updateSel('textEn', this.value)">${sel.textEn || ""}</textarea>
+            </div>
+          ` : sel.type === "widget_cert_spotlight" ? `
+            <div class="insp-section">
+              <p class="insp-title">Certificado / Extra Mostrado</p>
+              <label>Selecciona qué documento mostrar</label>
+              <select class="select" onchange="updateSel('certId', this.value)">
+                ${state.certifications.map((c) => `<option value="${c.id}" ${sel.certId === c.id ? "selected" : ""}>${c.title.es} (${c.category})</option>`).join("")}
+              </select>
+              <button class="btn btn-sun btn-xs" style="width:100%; margin-top:10px;" onclick="switchView('admin'); setAdminSection('certs');">Subir otro PDF en Bóveda →</button>
+            </div>
+          ` : `
+            <div class="insp-section">
+              <p class="insp-title">Vinculación de Datos</p>
+              <p class="muted" style="font-size:0.78rem; margin:0 0 10px;">
+                Este widget lee en tiempo real de tu Control Center CMS (${sel.type}).
+              </p>
+              ${sel.type === "widget_hero" ? `
+                <label style="display:flex; align-items:center; gap:6px; text-transform:none; letter-spacing:0; margin-bottom:10px;">
+                  <input type="checkbox" ${sel.showVitals !== false ? "checked" : ""} onchange="updateSel('showVitals', this.checked)" />
+                  Mostrar barra Vitals
+                </label>
+              ` : ""}
+              <button class="btn btn-sun btn-xs" style="width:100%;" onclick="switchView('admin')">Editar datos en Control Center →</button>
+            </div>
+          `}
+        `;
+        return;
+      }
+
+      body.innerHTML = `
+        <div class="insp-section">
+          <p class="insp-title">Alineación Rápida</p>
+          <div class="align-bar">
+            <button class="btn btn-xs" onclick="alignSelected('left')">← Izq</button>
+            <button class="btn btn-xs" onclick="alignSelected('center')">↔ Cen</button>
+            <button class="btn btn-xs" onclick="alignSelected('right')">Der →</button>
+            <button class="btn btn-xs" onclick="alignSelected('full')">Full</button>
+          </div>
+          <div class="insp-grid-4">
+            <div><label>X</label><input class="input" type="number" value="${sel.x}" onchange="updateSel('x', Number(this.value))" /></div>
+            <div><label>Y</label><input class="input" type="number" value="${sel.y}" onchange="updateSel('y', Number(this.value))" /></div>
+            <div><label>W</label><input class="input" type="number" value="${sel.w}" onchange="updateSel('w', Number(this.value))" /></div>
+            <div><label>H</label><input class="input" type="number" value="${sel.h}" onchange="updateSel('h', Number(this.value))" /></div>
+          </div>
+        </div>
+
+        <div class="insp-section">
+          <p class="insp-title">Apariencia</p>
+          <div class="insp-grid-4">
+            <div>
+              <label>Superficie</label>
+              <select class="select" onchange="updateSel('surface', this.value)">
+                <option value="raised" ${sel.surface === "raised" ? "selected" : ""}>Raised</option>
+                <option value="paper" ${sel.surface === "paper" ? "selected" : ""}>Base</option>
+                <option value="soft" ${sel.surface === "soft" ? "selected" : ""}>Soft</option>
+                <option value="transparent" ${sel.surface === "transparent" ? "selected" : ""}>Sin fondo</option>
+              </select>
+            </div>
+            <div>
+              <label>Borde</label>
+              <select class="select" onchange="updateSel('border', this.value)">
+                <option value="soft" ${sel.border === "soft" ? "selected" : ""}>Sutil</option>
+                <option value="strong" ${sel.border === "strong" ? "selected" : ""}>Fuerte</option>
+                <option value="accent" ${sel.border === "accent" ? "selected" : ""}>Acento</option>
+                <option value="none" ${sel.border === "none" ? "selected" : ""}>Ninguno</option>
+              </select>
+            </div>
+            <div><label>Radio px</label><input class="input" type="number" min="0" max="32" value="${sel.radius ?? 2}" onchange="updateSel('radius', Number(this.value))" /></div>
+            <div><label>Capa Z</label><input class="input" type="number" value="${sel.z}" onchange="updateSel('z', Number(this.value))" /></div>
+          </div>
+        </div>
+
+        <div class="insp-section">
+          <p class="insp-title">Comportamiento Móvil</p>
+          <label style="display:flex; align-items:center; gap:6px; text-transform:none; letter-spacing:0;">
+            <input type="checkbox" ${sel.mobileVisible ? "checked" : ""} onchange="updateSel('mobileVisible', this.checked)" />
+            Visible en apilado móvil (#${sel.mobileOrder})
+          </label>
+        </div>
+      `;
+    }
+
+    function updateNode(id, f, v) { const n = state.nodes.find((x) => x.id === id); if (!n) return; pushHistory(); n[f] = v; renderStudio(); }
+    function updateSel(f, v) { if (!state.selectedNodeId) return; updateNode(state.selectedNodeId, f, v); }
+    function deleteSel() { pushHistory(); state.nodes = state.nodes.filter((n) => n.id !== state.selectedNodeId); state.selectedNodeId = state.nodes[0]?.id || null; renderStudio(); }
+
+    /* ==================== IDE CODE WORKBENCH ==================== */
+    function setStudioSurface(surface) {
+      state.studioSurface = surface;
+      renderStudio();
+    }
+
+    function setIdeFile(file) {
+      state.ideFile = file;
+      renderIde();
+    }
+
+    function updateIdeGutter(text) {
+      const lines = Math.max(1, String(text || "").split("\n").length);
+      document.getElementById("ideGutter").innerHTML = Array.from({ length: lines }, (_, i) => i + 1).join("<br>");
+    }
+
+    function syncIdeScroll() {
+      document.getElementById("ideGutter").scrollTop = document.getElementById("ideTextarea").scrollTop;
+    }
+
+    function renderIde() {
+      document.querySelectorAll("[data-ide-file]").forEach((b) => {
+        b.classList.toggle("active", b.dataset.ideFile === state.ideFile);
+      });
+
+      const ta = document.getElementById("ideTextarea");
+      const pill = document.getElementById("ideStatusPill");
+      const applyBtn = document.getElementById("applyJsonBtn");
+      const sidePrev = document.getElementById("ideSidePreview");
+      const sel = state.nodes.find((n) => n.id === state.selectedNodeId);
+
+      const isJson = state.ideFile === "json";
+      applyBtn.classList.toggle("hidden", !isJson);
+      sidePrev.classList.toggle("hidden", state.studioSurface !== "ide" || isJson);
+
+      if (isJson) {
+        if (document.activeElement !== ta) {
+          ta.value = JSON.stringify({ version: 1, nodes: state.nodes }, null, 2);
+        }
+        pill.textContent = "JSON Schema · Canvas en vivo";
+        updateIdeGutter(ta.value);
+        return;
+      }
+
+      if (!sel || sel.type !== "custom_code") {
+        const msg = "// Selecciona un bloque '</> Código HTML/CSS' o inserta uno desde '+ Insertar' / Snippets para editar su código.";
+        if (document.activeElement !== ta) ta.value = msg;
+        pill.textContent = "Esperando bloque </> Código";
+        updateIdeGutter(ta.value);
+        if (state.studioSurface === "ide") {
+          document.getElementById("idePreviewNodeLabel").textContent = "Sin bloque de código activo";
+          document.getElementById("ideSidePreviewMount").innerHTML = `<p class="muted" style="margin:0; font-size:0.8rem;">Haz clic en un snippet arriba (Terminal, Bento KPI o Cita) para crear un bloque de código al instante.</p>`;
+        }
+        return;
+      }
+
+      const codeVal = state.ideFile === "html" ? (sel.codeHtml || "") : (sel.codeCss || "");
+      if (document.activeElement !== ta) {
+        ta.value = codeVal;
+      }
+      pill.textContent = `Shadow DOM · ${sel.label}`;
+      updateIdeGutter(ta.value);
+
+      if (state.studioSurface === "ide") {
+        document.getElementById("idePreviewNodeLabel").textContent = sel.label;
+        const mount = document.getElementById("ideSidePreviewMount");
+        mountShadowCode(mount, sel.codeHtml || "", sel.codeCss || "");
+      }
+    }
+
+    function onIdeInput() {
+      const ta = document.getElementById("ideTextarea");
+      updateIdeGutter(ta.value);
+      const pill = document.getElementById("ideStatusPill");
+
+      if (state.ideFile === "json") {
+        try {
+          const parsed = JSON.parse(ta.value);
+          pill.textContent = Array.isArray(parsed.nodes) ? `✓ JSON Válido (${parsed.nodes.length} nodos)` : "✕ Falta nodes[]";
+        } catch {
+          pill.textContent = "✕ Error de sintaxis JSON";
+        }
+        return;
+      }
+
+      const sel = state.nodes.find((n) => n.id === state.selectedNodeId);
+      if (!sel || sel.type !== "custom_code") return;
+
+      if (state.ideFile === "html") sel.codeHtml = ta.value;
+      else sel.codeCss = ta.value;
+
+      const stageHost = document.querySelector(`[data-shadow-node="${sel.id}"]`);
+      if (stageHost) mountShadowCode(stageHost, sel.codeHtml || "", sel.codeCss || "");
+      if (state.studioSurface === "ide") {
+        mountShadowCode(document.getElementById("ideSidePreviewMount"), sel.codeHtml || "", sel.codeCss || "");
+      }
+      document.getElementById("autoSaveLabel").textContent = "Código sincronizado";
+    }
+
+    function handleIdeKeydown(e) {
+      if (e.key === "Tab") {
+        e.preventDefault();
+        const ta = e.target;
+        const start = ta.selectionStart;
+        const end = ta.selectionEnd;
+        ta.value = ta.value.substring(0, start) + "  " + ta.value.substring(end);
+        ta.selectionStart = ta.selectionEnd = start + 2;
+        onIdeInput();
+      }
+    }
+
+    function insertCodeSnippet(key) {
+      const snip = CODE_SNIPPETS[key];
+      if (!snip) return;
+      let sel = state.nodes.find((n) => n.id === state.selectedNodeId);
+      if (!sel || sel.type !== "custom_code") {
+        addNode("custom_code");
+        sel = state.nodes.find((n) => n.id === state.selectedNodeId);
+      } else {
+        pushHistory();
+      }
+      sel.codeHtml = snip.html;
+      sel.codeCss = snip.css;
+      if (state.studioSurface === "visual") state.studioSurface = "split";
+      if (state.ideFile === "json") state.ideFile = "html";
+      document.getElementById("ideTextarea").blur();
+      renderStudio();
+      showToast(`Snippet '${key}' insertado en ${sel.label}`);
+    }
+
+    function applyCanvasJson() {
+      try {
+        const parsed = JSON.parse(document.getElementById("ideTextarea").value);
+        if (!Array.isArray(parsed.nodes)) return showToast("El JSON debe incluir un arreglo nodes[]");
+        pushHistory();
+        state.nodes = parsed.nodes;
+        state.selectedNodeId = state.nodes[0]?.id || null;
+        renderStudio();
+        showToast("JSON aplicado al lienzo");
+      } catch {
+        showToast("Error: JSON inválido");
+      }
+    }
+
+    function insertTemplateVar(token) {
+      let sel = state.nodes.find((n) => n.id === state.selectedNodeId);
+      if (!sel || sel.type !== "custom_code") {
+        addNode("custom_code");
+        sel = state.nodes.find((n) => n.id === state.selectedNodeId);
+      }
+      if (state.ideFile !== "html") state.ideFile = "html";
+      const ta = document.getElementById("ideTextarea");
+      const start = ta.selectionStart ?? ta.value.length;
+      const end = ta.selectionEnd ?? ta.value.length;
+      const next = (sel.codeHtml || "").slice(0, start) + token + (sel.codeHtml || "").slice(end);
+      sel.codeHtml = next;
+      ta.value = next;
+      onIdeInput();
+      showToast(`Variable insertada: ${token}`);
+    }
+
+    async function handleSourceUpload(event) {
+      const files = Array.from(event.target.files || []);
+      if (!files.length) return;
+      let sel = state.nodes.find((n) => n.id === state.selectedNodeId);
+      if (!sel || sel.type !== "custom_code") {
+        addNode("custom_code");
+        sel = state.nodes.find((n) => n.id === state.selectedNodeId);
+      } else {
+        pushHistory();
+      }
+
+      for (const file of files) {
+        const text = await file.text();
+        if (file.name.toLowerCase().endsWith(".css")) {
+          sel.codeCss = text;
+        } else {
+          sel.codeHtml = text;
+          sel.label = `</> ${file.name}`;
+        }
+      }
+      if (state.studioSurface === "visual") state.studioSurface = "split";
+      state.ideFile = "html";
+      document.getElementById("ideTextarea").blur();
+      event.target.value = "";
+      renderStudio();
+      showToast(`Archivo(s) fuente cargados y renderizados en ${sel.label}`);
+    }
+
+    async function handleFontUpload(event) {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      try {
+        const buf = await file.arrayBuffer();
+        const familyName = "CustomUserFont_" + Date.now();
+        const fontFace = new FontFace(familyName, buf);
+        await fontFace.load();
+        document.fonts.add(fontFace);
+        document.documentElement.style.setProperty("--f-display", `"${familyName}", Georgia, serif`);
+        document.documentElement.style.setProperty("--f-sans", `"${familyName}", system-ui, sans-serif`);
+        const lbl = document.getElementById("activeFontLabel");
+        if (lbl) lbl.textContent = `Fuente activa: ${file.name}`;
+        showToast(`Fuente personalizada aplicada: ${file.name}`);
+      } catch {
+        showToast("No se pudo cargar el archivo de fuente (.woff2/.ttf/.otf)");
+      }
+      event.target.value = "";
+    }
+
+    document.getElementById("modeDesktopBtn").onclick = () => { state.studioMode = "desktop"; renderStudio(); };
+    document.getElementById("modeMobileBtn").onclick = () => { state.studioMode = "mobile"; renderStudio(); };
+    document.getElementById("studioUndoBtn").onclick = () => {
+      if (!state.history.length) return showToast("Nada que deshacer");
+      state.redoStack.push(JSON.stringify(state.nodes));
+      state.nodes = JSON.parse(state.history.pop());
+      renderStudio();
+    };
+    document.getElementById("studioRedoBtn").onclick = () => {
+      if (!state.redoStack.length) return showToast("Nada que rehacer");
+      state.history.push(JSON.stringify(state.nodes));
+      state.nodes = JSON.parse(state.redoStack.pop());
+      renderStudio();
+    };
+    document.getElementById("studioPublishBtn").onclick = () => {
+      state.publishedNodes = JSON.parse(JSON.stringify(state.nodes));
+      state.publishedVersion += 1;
+      document.getElementById("draftBadge").textContent = `PUBLISHED v${state.publishedVersion}`;
+      showToast(`Publicado v${state.publishedVersion}.0 en Página Pública`);
+    };
+
+    /* ==================== 03 ADMIN CONTROL CENTER ==================== */
+    function setAdminSection(sec) {
+      state.adminSec = sec;
+      document.querySelectorAll("[data-admin-sec]").forEach((b) => b.classList.toggle("active", b.dataset.adminSec === sec));
+      renderAdmin();
+    }
+
+    function renderAdmin() {
+      const unreadCount = state.messages.filter((m) => !m.isRead).length;
+      document.getElementById("adminOwnerName").textContent = state.profile.name;
+      document.getElementById("adminCareerCount").textContent = String(state.projects.length + state.skills.length);
+      document.getElementById("adminCertCount").textContent = String(state.certifications.length);
+      document.getElementById("adminMsgCount").textContent = String(unreadCount);
+      document.getElementById("adminPubPill").textContent = `Publicado v${state.publishedVersion}.0`;
+
+      const titles = {
+        overview: "00 Resumen & Salud",
+        identity: "01 Identidad ES/EN",
+        career: "02 Carrera & Stack",
+        certs: "03 Bóveda PDF Certs",
+        messages: "04 Bandeja de Reclutadores",
+        security: "05 Acceso & Versiones",
+      };
+      document.getElementById("adminBreadcrumb").textContent = titles[state.adminSec] || "Resumen";
+
+      const hasEnProfile = Boolean(state.profile.roleEn?.trim() && state.profile.bioEn?.trim());
+      const missingEnCerts = state.certifications.filter((c) => !c.title.en?.trim()).length;
+      const healthScore = Math.max(60, 100 - (hasEnProfile ? 0 : 15) - missingEnCerts * 5);
+      document.getElementById("adminHealthBadge").textContent = `${healthScore}%`;
+
+      const main = document.getElementById("adminMainPanel");
+
+      if (state.adminSec === "overview") {
+        main.innerHTML = `
+          <div class="kpi-strip">
+            <div class="kpi-cell"><span class="spec-k">Showroom</span><div class="kpi-num">${state.projects.length}</div></div>
+            <div class="kpi-cell"><span class="spec-k">Stack Skills</span><div class="kpi-num">${state.skills.length}</div></div>
+            <div class="kpi-cell"><span class="spec-k">PDFs Bóveda</span><div class="kpi-num">${state.certifications.length}</div></div>
+            <div class="kpi-cell"><span class="spec-k">No Leídos</span><div class="kpi-num" style="color:var(--sun);">${unreadCount}</div></div>
+          </div>
+
+          <div class="grid-2">
+            <div class="panel">
+              <div class="sheet-head" style="margin-bottom:12px;"><span class="sheet-head__n">OK //</span><span class="sheet-head__title">Salud Bilingüe (ES / EN)</span><span class="sheet-head__lead"></span></div>
+              <div class="spec-row"><span>Perfil Profesional (ES/EN)</span><span class="mono" style="color:${hasEnProfile ? "var(--sun)" : "var(--ink-muted)"};">${hasEnProfile ? "100% OK" : "Falta EN"}</span></div>
+              <div class="spec-row"><span>Proyectos Showroom</span><span class="mono" style="color:var(--sun);">${state.projects.length} activos</span></div>
+              <div class="spec-row"><span>Certificados traducidos</span><span class="mono">${state.certifications.length - missingEnCerts} / ${state.certifications.length}</span></div>
+              <div class="spec-row"><span>Nodos en Studio</span><span class="mono">${state.nodes.length} bloques</span></div>
+            </div>
+
+            <div class="panel">
+              <div class="sheet-head" style="margin-bottom:12px;"><span class="sheet-head__n">⚡ //</span><span class="sheet-head__title">Acciones Rápidas</span><span class="sheet-head__lead"></span></div>
+              <div style="display:grid; gap:8px;">
+                <button class="btn btn-solid btn-sm" onclick="switchView('studio')">Abrir Constructor Studio &amp; IDE →</button>
+                <button class="btn btn-sm" onclick="setAdminSection('certs')">Subir nueva Certificación PDF</button>
+                <button class="btn btn-sm" onclick="setAdminSection('career')">Agregar Proyecto o Habilidad</button>
+                <button class="btn btn-sm" onclick="setAdminSection('messages')">Revisar Bandeja (${unreadCount} nuevos)</button>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (state.adminSec === "identity") {
+        main.innerHTML = `
+          <div class="sheet-head"><span class="sheet-head__n">01 //</span><span class="sheet-head__title">Identidad Profesional Bilingüe</span><span class="sheet-head__lead"></span></div>
+          <div class="grid-2">
+            <form class="panel" onsubmit="saveAdminProfile(event)" style="display:grid; gap:11px;">
+              <div class="grid-2">
+                <div><label>Nombre Completo</label><input class="input" id="admName" value="${state.profile.name}" /></div>
+                <div><label>Ubicación</label><input class="input" id="admLoc" value="${state.profile.location}" /></div>
+              </div>
+              <div><label>Titular (ES)</label><input class="input" id="admRoleEs" value="${state.profile.roleEs}" /></div>
+              <div><label>Headline (EN)</label><input class="input" id="admRoleEn" value="${state.profile.roleEn}" /></div>
+              <div><label>Bio (ES)</label><textarea class="textarea" rows="2" id="admBioEs">${state.profile.bioEs}</textarea></div>
+              <div><label>Bio (EN)</label><textarea class="textarea" rows="2" id="admBioEn">${state.profile.bioEn}</textarea></div>
+              <button class="btn btn-solid btn-sm" type="submit">Guardar y Sincronizar</button>
+            </form>
+            <div class="panel">
+              <p class="palette-group-title"><span>Vista Previa Instantánea (Hero)</span></p>
+              <div class="mono" style="font-size:0.62rem; color:var(--sun);">// DOSSIER PROFESIONAL</div>
+              <h2 style="margin:6px 0 4px; font-size:1.8rem;">${state.profile.name}</h2>
+              <p class="serif" style="margin:0; font-style:italic; color:var(--ink-dim);">${state.profile.roleEs}</p>
+              <p class="dim" style="margin:12px 0 0; font-size:0.84rem;">${state.profile.bioEs}</p>
+              <div style="margin-top:16px; border-top:1px solid var(--line-soft); padding-top:10px;" class="mono muted">
+                Ubicación: ${state.profile.location}
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (state.adminSec === "career") {
+        main.innerHTML = `
+          <div class="sheet-head"><span class="sheet-head__n">02 //</span><span class="sheet-head__title">Carrera, Proyectos y Stack</span><span class="sheet-head__lead"></span></div>
+          <div class="row" style="margin-bottom:16px;">
+            <button class="chip ${state.adminCareerTab === "projects" ? "active" : ""}" onclick="state.adminCareerTab='projects'; renderAdmin();">Proyectos (${state.projects.length})</button>
+            <button class="chip ${state.adminCareerTab === "skills" ? "active" : ""}" onclick="state.adminCareerTab='skills'; renderAdmin();">Habilidades (${state.skills.length})</button>
+          </div>
+
+          ${state.adminCareerTab === "projects" ? `
+            <div class="grid-2">
+              <form class="panel" onsubmit="addAdminProject(event)" style="display:grid; gap:10px; align-content:start;">
+                <p class="palette-group-title"><span>Nuevo Proyecto Showroom</span></p>
+                <div><label>Nombre</label><input class="input" id="admProjTitle" required placeholder="Ej. Distributed Auth Mesh" /></div>
+                <div><label>Tags (separados por coma)</label><input class="input" id="admProjTags" value="TypeScript, Docker" /></div>
+                <div><label>Resumen</label><textarea class="textarea" rows="2" id="admProjSummary" required placeholder="Descripción corta..."></textarea></div>
+                <button class="btn btn-solid btn-sm" type="submit">+ Agregar al Showroom</button>
+              </form>
+              <div style="display:grid; gap:10px; align-content:start;">
+                ${state.projects.map((p, idx) => `
+                  <div class="cert-card">
+                    <div>
+                      <div class="mono" style="font-size:0.62rem; color:var(--sun);">${p.code} · ${p.tags.join(" · ")}</div>
+                      <strong>${p.title}</strong>
+                      <div class="muted" style="font-size:0.78rem;">${p.summaryEs}</div>
+                    </div>
+                    <button class="btn btn-xs" onclick="state.projects.splice(${idx},1); renderAdmin(); showToast('Proyecto eliminado');">✕</button>
+                  </div>
+                `).join("")}
+              </div>
+            </div>
+          ` : `
+            <div class="grid-2">
+              <form class="panel" onsubmit="addAdminSkill(event)" style="display:grid; gap:10px; align-content:start;">
+                <p class="palette-group-title"><span>Nueva Habilidad</span></p>
+                <div><label>Tecnología / Competencia</label><input class="input" id="admSkillName" required placeholder="Ej. Rust / WebAssembly" /></div>
+                <div class="grid-2">
+                  <div><label>Categoría</label><select class="select" id="admSkillCat"><option>Frontend</option><option>Backend</option><option>Cloud</option></select></div>
+                  <div><label>Dominio (%)</label><input class="input" type="number" id="admSkillLevel" min="10" max="100" value="85" /></div>
+                </div>
+                <button class="btn btn-solid btn-sm" type="submit">+ Agregar Habilidad</button>
+              </form>
+              <div style="display:grid; gap:8px; align-content:start;">
+                ${state.skills.map((s, idx) => `
+                  <div class="cert-card" style="padding:12px 14px;">
+                    <div style="flex:1;">
+                      <div class="row" style="justify-content:space-between;"><strong>${s.name}</strong><span class="mono muted" style="font-size:0.7rem;">${s.cat} · ${s.level}%</span></div>
+                      <div class="segments">${Array.from({ length: 10 }, (_, i) => `<div class="seg ${i < Math.round(s.level / 10) ? "on" : ""}"></div>`).join("")}</div>
+                    </div>
+                    <button class="btn btn-xs" onclick="state.skills.splice(${idx},1); renderAdmin();">✕</button>
+                  </div>
+                `).join("")}
+              </div>
+            </div>
+          `}
+        `;
+      } else if (state.adminSec === "certs") {
+        const galleryExists = state.nodes.some((n) => n.type === "widget_certs");
+        main.innerHTML = `
+          <div class="sheet-head"><span class="sheet-head__n">03 //</span><span class="sheet-head__title">Bóveda de Certificados y Documentos PDF</span><span class="sheet-head__lead"></span></div>
+
+          <div class="step-rail">
+            <div class="step-cell"><span class="mono" style="color:var(--sun);">PASO 1 · SUBE</span><div class="muted" style="margin-top:2px;">Arrastra cualquier certificado, diploma o documento extra en .pdf</div></div>
+            <div class="step-cell"><span class="mono" style="color:var(--sun);">PASO 2 · COMPLETA</span><div class="muted" style="margin-top:2px;">El título se sugiere automático; elige tipo y privacidad</div></div>
+            <div class="step-cell"><span class="mono" style="color:var(--sun);">PASO 3 · COLÓCALO</span><div class="muted" style="margin-top:2px;">Aparece en tu Galería o fíjalo como tarjeta libre en el Studio</div></div>
+          </div>
+
+          <div class="grid-2">
+            <form class="panel" onsubmit="saveAdminCert(event)" style="display:grid; gap:11px; align-content:start;">
+              <p class="palette-group-title"><span>1. Adjuntar Documento PDF</span></p>
+
+              <div id="certDropzone" class="dropzone"
+                onclick="document.getElementById('certPdfInput').click()"
+                ondragover="event.preventDefault(); this.classList.add('drag-over');"
+                ondragleave="this.classList.remove('drag-over');"
+                ondrop="handleCertDrop(event)">
+                <input class="hidden" id="certPdfInput" type="file" accept="application/pdf,.pdf" onchange="onCertFileSelected(this.files[0])" />
+                ${state.pendingPdf ? `
+                  <div class="mono" style="color:var(--sun); font-size:0.72rem;">✓ PDF LISTO PARA GUARDAR</div>
+                  <div style="margin-top:4px; font-weight:500;">${state.pendingPdf.name}</div>
+                  <div class="mono muted" style="font-size:0.68rem;">${state.pendingPdf.sizeLabel} · Clic para cambiar</div>
+                ` : `
+                  <div class="mono" style="color:var(--sun); font-size:0.75rem;">↑ ARRASTRA TU .PDF AQUÍ</div>
+                  <div class="muted" style="font-size:0.76rem; margin-top:4px;">o haz clic para seleccionarlo desde tu PC (máx. 10 MB)</div>
+                `}
+              </div>
+
+              ${state.pendingPdf ? `
+                <button type="button" class="btn btn-xs" onclick="previewPendingPdf()">👁 Previsualizar PDF antes de guardar</button>
+              ` : ""}
+
+              <div class="grid-2">
+                <div><label>Tipo de Documento</label>
+                  <select class="select" id="certCategory">
+                    <option value="Certificado">Certificado</option>
+                    <option value="Diploma">Diploma / Título</option>
+                    <option value="Premio">Premio / Reconocimiento</option>
+                    <option value="Extra">Documento Extra</option>
+                    <option value="Cloud">Cloud / Técnico</option>
+                    <option value="Seguridad">Seguridad</option>
+                  </select>
+                </div>
+                <div><label>Emisor / Institución</label><input class="input" id="certIssuer" required placeholder="AWS / Universidad / Org." /></div>
+              </div>
+
+              <div><label>Título Visible (ES)</label><input class="input" id="certTitleEs" required placeholder="Ej. AWS Solutions Architect" value="${state.pendingPdf?.suggestedTitle || ""}" /></div>
+              <div><label>Title (EN - opcional)</label><input class="input" id="certTitleEn" placeholder="Si lo dejas vacío usa el mismo" /></div>
+
+              <div style="border-top:1px solid var(--line-soft); padding-top:10px; display:grid; gap:7px;">
+                <p class="palette-group-title" style="margin-bottom:2px;"><span>¿Dónde quieres mostrarlo?</span></p>
+                <label style="display:flex; align-items:center; gap:7px; text-transform:none; letter-spacing:0; cursor:pointer;">
+                  <input type="checkbox" id="certShowInGallery" checked /> Mostrar automáticamente en la Galería del CV
+                </label>
+                <label style="display:flex; align-items:center; gap:7px; text-transform:none; letter-spacing:0; cursor:pointer;">
+                  <input type="checkbox" id="certPinToStudio" /> También colocar como Tarjeta destacada libre en el Studio
+                </label>
+                <label style="display:flex; align-items:center; gap:7px; text-transform:none; letter-spacing:0; cursor:pointer;">
+                  <input type="checkbox" id="certAllowDownload" checked /> Permitir al visitante descargar el PDF original
+                </label>
+              </div>
+
+              <button class="btn btn-solid btn-sm" type="submit">Guardar Documento en Bóveda</button>
+            </form>
+
+            <div style="display:grid; gap:10px; align-content:start;">
+              <div class="row" style="justify-content:space-between; border-bottom:1px solid var(--line-soft); padding-bottom:8px;">
+                <span class="mono muted" style="font-size:0.68rem;">DOCUMENTOS GUARDADOS (${state.certifications.length})</span>
+                <button class="btn btn-xs" onclick="ensureGalleryInStudio()">${galleryExists ? "● Galería en Studio" : "+ Colocar Galería en Studio"}</button>
+              </div>
+              ${state.certifications.map((c, idx) => {
+                const isPinned = state.nodes.some((n) => n.type === "widget_cert_spotlight" && n.certId === c.id);
+                return `
+                <div class="cert-card" style="flex-direction:column; align-items:stretch; gap:10px;">
+                  <div class="row" style="justify-content:space-between; align-items:flex-start;">
+                    <div>
+                      <div class="mono" style="font-size:0.62rem; color:var(--sun);">${c.category} · ${c.date} · ${c.objectUrl ? "PDF Adjunto" : "Demo"}</div>
+                      <strong style="display:block; margin-top:2px;">${c.title.es}</strong>
+                      <div class="mono muted" style="font-size:0.68rem;">${c.issuer} · ${c.credentialId}</div>
+                    </div>
+                    <span class="ver-pill">${isPinned ? "📌 En Studio" : (c.isVisible !== false ? "● En Galería" : "Oculto")}</span>
+                  </div>
+                  <div class="row" style="justify-content:space-between; border-top:1px solid var(--line-soft); padding-top:8px;">
+                    <div class="row">
+                      <button class="btn btn-sun btn-xs" onclick="placeCertInStudio('${c.id}', true)">📌 Colocar en Studio</button>
+                      <button class="btn btn-xs" onclick="openPdfModal('${c.id}')">👁 Ver PDF</button>
+                    </div>
+                    <div class="row">
+                      <button class="btn btn-xs" onclick="toggleCertVisibility('${c.id}')">${c.isVisible !== false ? "Ocultar" : "Mostrar"}</button>
+                      <button class="btn btn-xs" onclick="state.certifications.splice(${idx},1); renderAdmin(); showToast('Documento eliminado');">✕</button>
+                    </div>
+                  </div>
+                </div>
+              `;}).join("")}
+            </div>
+          </div>
+        `;
+      } else if (state.adminSec === "messages") {
+        const activeMsg = state.messages.find((m) => m.id === state.selectedMsgId) || state.messages[0];
+        main.innerHTML = `
+          <div class="sheet-head"><span class="sheet-head__n">04 //</span><span class="sheet-head__title">Bandeja de Reclutadores</span><span class="sheet-head__lead"></span></div>
+          ${state.messages.length === 0 ? `<div class="panel"><p class="muted">Sin mensajes recibidos.</p></div>` : `
+            <div class="inbox-split">
+              <div class="inbox-list">
+                ${state.messages.map((m) => `
+                  <button class="inbox-item ${activeMsg && activeMsg.id === m.id ? "active" : ""}" onclick="state.selectedMsgId='${m.id}'; renderAdmin();">
+                    <div class="row" style="justify-content:space-between;">
+                      <strong style="font-size:0.8rem;">${m.subject}</strong>
+                      ${!m.isRead ? `<span class="ver-dot" title="No leído"></span>` : ""}
+                    </div>
+                    <div class="mono muted" style="font-size:0.64rem; margin-top:3px;">${m.sender}</div>
+                  </button>
+                `).join("")}
+              </div>
+              <div style="padding:20px; display:flex; flex-direction:column; justify-content:space-between; gap:16px;">
+                ${activeMsg ? `
+                  <div>
+                    <div class="row" style="justify-content:space-between; border-bottom:1px solid var(--line-soft); padding-bottom:12px;">
+                      <div>
+                        <h3 class="serif" style="margin:0; font-weight:400; font-size:1.35rem;">${activeMsg.subject}</h3>
+                        <div class="mono muted" style="font-size:0.7rem; margin-top:4px;">De: ${activeMsg.sender}</div>
+                      </div>
+                      <span class="ver-pill">${activeMsg.isRead ? "Leído" : "Nuevo"}</span>
+                    </div>
+                    <p class="dim" style="margin:16px 0 0; line-height:1.65;">${activeMsg.body}</p>
+                  </div>
+                  <div class="row" style="border-top:1px solid var(--line-soft); padding-top:12px;">
+                    <button class="btn btn-xs" onclick="toggleMsgRead('${activeMsg.id}')">${activeMsg.isRead ? "Marcar no leído" : "Marcar como leído"}</button>
+                    <button class="btn btn-sun btn-xs" onclick="deleteMsg('${activeMsg.id}')">Eliminar</button>
+                  </div>
+                ` : ""}
+              </div>
+            </div>
+          `}
+        `;
+      } else {
+        main.innerHTML = `
+          <div class="sheet-head"><span class="sheet-head__n">05 //</span><span class="sheet-head__title">Seguridad, Acceso y Versiones</span><span class="sheet-head__lead"></span></div>
+          <div class="grid-2">
+            <div class="panel">
+              <p class="palette-group-title"><span>Política de Acceso</span></p>
+              <div class="spec-row"><span class="spec-k">Modo</span><span class="mono">Single-Tenant (ALLOW_SIGNUP=false)</span></div>
+              <div class="spec-row"><span class="spec-k">Ruta Pública</span><span class="mono">/ &amp; /u/mi-cv</span></div>
+              <div class="spec-row"><span class="spec-k">Sesión</span><span class="mono">Cookie HttpOnly · JWT HS256</span></div>
+              <div class="spec-row"><span class="spec-k">Límite PDF</span><span class="mono">10 MB (%PDF- + SHA-256)</span></div>
+            </div>
+            <div class="panel">
+              <p class="palette-group-title"><span>Snapshots Publicados</span></p>
+              <div class="spec-row"><span>Versión Activa</span><span class="mono" style="color:var(--sun);">v${state.publishedVersion}.0 (PUBLISHED)</span></div>
+              <div class="spec-row"><span>Borrador Studio</span><span class="mono">${state.nodes.length} bloques en memoria</span></div>
+              <div style="margin-top:12px;"><button class="btn btn-sm" onclick="switchView('studio')">Administrar en Studio →</button></div>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function toggleMsgRead(id) {
+      const m = state.messages.find((x) => x.id === id);
+      if (m) { m.isRead = !m.isRead; renderAdmin(); }
+    }
+    function deleteMsg(id) {
+      state.messages = state.messages.filter((x) => x.id !== id);
+      state.selectedMsgId = state.messages[0]?.id || null;
+      renderAdmin();
+      showToast("Mensaje eliminado");
+    }
+    function addAdminProject(e) {
+      e.preventDefault();
+      state.projects.unshift({
+        code: "PRJ-0" + (state.projects.length + 1),
+        title: document.getElementById("admProjTitle").value,
+        tags: document.getElementById("admProjTags").value.split(",").map((s) => s.trim()).filter(Boolean),
+        metric: "Nuevo proyecto",
+        summaryEs: document.getElementById("admProjSummary").value,
+        summaryEn: document.getElementById("admProjSummary").value,
+        previewLines: ["project: active", "sync: studio + showroom"],
+      });
+      renderAdmin();
+      showToast("Proyecto agregado al Showroom");
+    }
+    function addAdminSkill(e) {
+      e.preventDefault();
+      state.skills.push({
+        name: document.getElementById("admSkillName").value,
+        cat: document.getElementById("admSkillCat").value,
+        level: Number(document.getElementById("admSkillLevel").value) || 80,
+        years: "2a",
+      });
+      renderAdmin();
+      showToast("Habilidad agregada al Stack");
+    }
+
+    function saveAdminProfile(e) {
+      e.preventDefault();
+      state.profile.name = document.getElementById("admName").value;
+      state.profile.location = document.getElementById("admLoc").value;
+      state.profile.roleEs = document.getElementById("admRoleEs").value;
+      state.profile.roleEn = document.getElementById("admRoleEn").value;
+      state.profile.bioEs = document.getElementById("admBioEs").value;
+      state.profile.bioEn = document.getElementById("admBioEn").value;
+      renderAdmin();
+      showToast("Perfil actualizado en Studio y Página Pública");
+    }
+
+    function onCertFileSelected(file) {
+      if (!file) return;
+      if (!file.name.toLowerCase().endsWith(".pdf") && file.type !== "application/pdf") {
+        showToast("Solo se permiten archivos .pdf");
+        return;
+      }
+      const cleanTitle = file.name.replace(/\.pdf$/i, "").replace(/[_-]+/g, " ").trim();
+      state.pendingPdf = {
+        file,
+        objectUrl: URL.createObjectURL(file),
+        name: file.name,
+        sizeLabel: file.size > 1024 * 1024 ? `${(file.size / (1024 * 1024)).toFixed(2)} MB` : `${Math.max(1, Math.round(file.size / 1024))} KB`,
+        suggestedTitle: cleanTitle,
+      };
+      renderAdmin();
+      showToast(`PDF cargado: ${file.name}`);
+    }
+
+    function handleCertDrop(e) {
+      e.preventDefault();
+      e.currentTarget.classList.remove("drag-over");
+      const file = e.dataTransfer?.files?.[0];
+      if (file) onCertFileSelected(file);
+    }
+
+    function previewPendingPdf() {
+      if (!state.pendingPdf?.objectUrl) return;
+      const vp = document.getElementById("pdfViewport");
+      document.getElementById("pdfModalTitle").textContent = state.pendingPdf.name;
+      document.getElementById("pdfModalMeta").textContent = `Vista previa antes de guardar · ${state.pendingPdf.sizeLabel}`;
+      document.getElementById("pdfDownloadBtn").classList.add("hidden");
+      ["pdfPrevBtn", "pdfPageIndicator", "pdfNextBtn", "pdfZoomOutBtn", "pdfZoomIndicator", "pdfZoomInBtn"].forEach((id) => document.getElementById(id).classList.add("hidden"));
+      vp.innerHTML = `<iframe src="${state.pendingPdf.objectUrl}" style="width:100%; height:66vh; border:1px solid var(--line);" title="Preview PDF"></iframe>`;
+      document.getElementById("pdfModal").classList.remove("hidden");
+    }
+
+    function toggleCertVisibility(id) {
+      const c = state.certifications.find((x) => x.id === id);
+      if (!c) return;
+      c.isVisible = c.isVisible === false ? true : false;
+      renderAdmin();
+      showToast(c.isVisible ? "Visible en Galería pública" : "Oculto en Galería pública");
+    }
+
+    function saveAdminCert(e) {
+      e.preventDefault();
+      const objectUrl = state.pendingPdf?.objectUrl || null;
+      const esTitle = document.getElementById("certTitleEs").value.trim();
+      const enTitle = document.getElementById("certTitleEn").value.trim() || esTitle;
+      const pinToStudio = document.getElementById("certPinToStudio").checked;
+      const newId = "c" + Date.now();
+
+      state.certifications.unshift({
+        id: newId,
+        title: { es: esTitle, en: enTitle },
+        issuer: document.getElementById("certIssuer").value.trim(),
+        category: document.getElementById("certCategory").value,
+        date: "2026-11-21",
+        credentialId: "CERT-" + Math.floor(1000 + Math.random() * 9000),
+        allowDownload: document.getElementById("certAllowDownload").checked,
+        isVisible: document.getElementById("certShowInGallery").checked,
+        objectUrl,
+      });
+
+      state.pendingPdf = null;
+      if (pinToStudio) {
+        placeCertInStudio(newId, true);
+        return;
+      }
+      renderAdmin();
+      showToast("Documento guardado y listo en Bóveda");
+    }
+
+    /* ==================== LIGHTBOX PDF & ATS ==================== */
+    function openPdfModal(certId) {
+      const c = state.certifications.find((x) => x.id === certId);
+      if (!c) return;
+      state.pdfModal = { certId, page: 1, zoom: 100 };
+      document.getElementById("pdfModal").classList.remove("hidden");
+      renderPdfModal();
+    }
+    function closePdfModal() { document.getElementById("pdfModal").classList.add("hidden"); }
+    function changePdfPage(d) { state.pdfModal.page = Math.min(2, Math.max(1, state.pdfModal.page + d)); renderPdfModal(); }
+    function zoomPdf(d) { state.pdfModal.zoom = Math.min(130, Math.max(70, state.pdfModal.zoom + d)); renderPdfModal(); }
+    function renderPdfModal() {
+      const c = state.certifications.find((x) => x.id === state.pdfModal.certId);
+      if (!c) return;
+      document.getElementById("pdfModalTitle").textContent = c.title[state.locale] || c.title.es;
+      document.getElementById("pdfModalMeta").textContent = `${c.issuer} · ${c.date} · ${c.credentialId}`;
+      const dlBtn = document.getElementById("pdfDownloadBtn");
+      dlBtn.classList.toggle("hidden", !c.allowDownload);
+      dlBtn.onclick = () => {
+        if (c.objectUrl) { const a = document.createElement("a"); a.href = c.objectUrl; a.download = `${c.credentialId}.pdf`; a.click(); }
+        else showToast("Descarga PDF simulada");
+      };
+      const vp = document.getElementById("pdfViewport");
+      const hasReal = Boolean(c.objectUrl);
+      ["pdfPrevBtn", "pdfPageIndicator", "pdfNextBtn", "pdfZoomOutBtn", "pdfZoomIndicator", "pdfZoomInBtn"].forEach((id) => document.getElementById(id).classList.toggle("hidden", hasReal));
+      if (hasReal) {
+        vp.innerHTML = `<iframe src="${c.objectUrl}" style="width:100%; height:66vh; border:1px solid var(--line);" title="PDF"></iframe>`;
+        return;
+      }
+      document.getElementById("pdfPageIndicator").textContent = `${state.pdfModal.page} / 2`;
+      document.getElementById("pdfZoomIndicator").textContent = `${state.pdfModal.zoom}%`;
+      vp.innerHTML = `<div class="pdf-sheet" style="transform:scale(${state.pdfModal.zoom / 100})"><p class="mono" style="font-size:10px; color:#ce5e32; margin:0;">VISOR INTEGRADO PDF.JS</p><h2 class="serif" style="margin:10px 0;">${c.title[state.locale] || c.title.es}</h2><p style="font-size:14px; color:#333;">${state.pdfModal.page === 1 ? `Emitido por ${c.issuer} (${c.category}).` : `Página 2 · Credencial ${c.credentialId}.`}</p></div>`;
+    }
+
+    document.getElementById("openAtsBtn").addEventListener("click", () => {
+      document.getElementById("atsTitle").textContent = state.locale === "es" ? "Exportación ATS · Español" : "ATS Export · English";
+      document.getElementById("atsPreviewSheet").innerHTML = `<h2 class="serif" style="margin:0;">${state.profile.name}</h2><p style="margin:4px 0 12px; color:#ce5e32; font-weight:600;">${state.locale === "es" ? state.profile.roleEs : state.profile.roleEn}</p><p style="font-size:13px;">${state.locale === "es" ? state.profile.bioEs : state.profile.bioEn}</p><h4 style="margin:14px 0 6px; border-bottom:1px solid #bbb;">Certificaciones</h4>${state.certifications.map((c) => `<p style="font-size:13px; margin:3px 0;">• ${c.title[state.locale] || c.title.es} — ${c.issuer}</p>`).join("")}`;
+      document.getElementById("atsModal").classList.remove("hidden");
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") { closePdfModal(); document.getElementById("atsModal").classList.add("hidden"); }
+      if (state.activeView !== "studio") return;
+      const tag = document.activeElement?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") { e.preventDefault(); document.getElementById("studioUndoBtn").click(); }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") { e.preventDefault(); document.getElementById("studioRedoBtn").click(); }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "d") { e.preventDefault(); duplicateSelected(); }
+      if (e.key === "Delete") { e.preventDefault(); deleteSel(); }
+
+      const sel = state.nodes.find((n) => n.id === state.selectedNodeId);
+      if (!sel || sel.locked || state.studioMode !== "desktop") return;
+      const step = e.shiftKey ? 24 : 8;
+      if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)) {
+        e.preventDefault();
+        pushHistory();
+        if (e.key === "ArrowLeft") sel.x = Math.max(0, sel.x - step);
+        if (e.key === "ArrowRight") sel.x += step;
+        if (e.key === "ArrowUp") sel.y = Math.max(0, sel.y - step);
+        if (e.key === "ArrowDown") sel.y += step;
+        renderStudio();
+      }
+    });
+
+    renderPublic();
+  </script>
+</body>
+</html>

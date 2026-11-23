@@ -1,0 +1,17 @@
+{
+  "name": "@cv/api-cv",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@cv/api-auth": "workspace:*",
+    "@cv/contracts": "workspace:*",
+    "@cv/core": "workspace:*",
+    "@cv/database": "workspace:*",
+    "next": "^16.4.6",
+    "zod": "^3.25.76"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@web/*": ["./src/*"],
+      "@cv/contracts": ["../../packages/contracts/src/index.ts"],
+      "@cv/core": ["../../packages/core/src/index.ts"],
+      "@cv/database": ["../../packages/database/src/index.ts"],
+      "@cv/api-auth": ["../../services/api-auth/src/index.ts"],
+      "@cv/api-auth/edge": ["../../services/api-auth/src/edge.ts"],
+      "@cv/api-cv": ["../../services/api-cv/src/index.ts"],
+      "@cv/api-certifications": ["../../services/api-certifications/src/index.ts"],
+      "@cv/media-vault": ["../../services/media-vault/src/index.ts"],
+      "@cv/api-studio": ["../../services/api-studio/src/index.ts"],
+      "@cv/api-contact": ["../../services/api-contact/src/index.ts"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": ["node_modules"]
+}

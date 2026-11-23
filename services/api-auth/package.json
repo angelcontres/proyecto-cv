@@ -1,0 +1,18 @@
+{
+  "name": "@cv/api-auth",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./edge": "./src/edge.ts"
+  },
+  "dependencies": {
+    "@cv/core": "workspace:*",
+    "@cv/database": "workspace:*",
+    "bcryptjs": "^3.0.3",
+    "jose": "^6.2.18",
+    "next": "^16.4.6",
+    "zod": "^3.25.76"
+  }
+}

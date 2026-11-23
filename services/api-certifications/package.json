@@ -1,0 +1,18 @@
+{
+  "name": "@cv/api-certifications",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@cv/api-auth": "workspace:*",
+    "@cv/contracts": "workspace:*",
+    "@cv/core": "workspace:*",
+    "@cv/database": "workspace:*",
+    "@cv/media-vault": "workspace:*",
+    "next": "^16.4.6",
+    "zod": "^3.25.76"
+  }
+}

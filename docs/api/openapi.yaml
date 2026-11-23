@@ -1,0 +1,1870 @@
+openapi: 3.1.0
+info:
+  title: Proyecto CV - API REST
+  version: 1.0.0
+  description: |
+    Contrato REST del Sistema Web de CV Interactivo con Constructor Visual y Bóveda PDF.
+    Documenta las 33 operaciones HTTP actualmente implementadas en el gateway `apps/web/src/app/api/**` delegando en `services/*` (20 archivos `route.ts`),
+    junto con 2 endpoints planificados de Fases 2-3 marcados explícitamente con `x-implemented: false`.
+  contact:
+    name: Arquitectura Proyecto CV
+servers:
+  - url: http://localhost:3000
+    description: Servidor de desarrollo local (Next.js App Router)
+
+tags:
+  - name: Health
+    description: Estado del servicio
+  - name: Auth
+    description: Inicio, cierre y consulta de sesión mediante cookie HttpOnly JWT
+  - name: Public
+    description: Endpoints públicos consumidos desde el CV interactivo
+  - name: Admin Profile
+    description: Configuración del perfil profesional, slug e idiomas
+  - name: Admin Career
+    description: Gestión CRUD de experiencias, educación, proyectos y habilidades
+  - name: Admin Certifications
+    description: Bóveda de certificaciones profesionales y respaldo PDF
+  - name: Admin Messages
+    description: Bandeja de mensajes recibidos desde el formulario de contacto
+  - name: Studio Layout
+    description: Lectura, guardado Draft y publicación atómica de layouts del Studio
+  - name: Planned (Fase 2-3)
+    description: Endpoints objetivos planificados en SRS/SAD pendientes de implementación
+
+paths:
+  /api/health:
+    get:
+      tags: [Health]
+      summary: Verifica estado del servicio
+      operationId: getHealth
+      x-implemented: true
+      x-source: apps/web/src/app/api/health/route.ts
+      responses:
+        "200":
+          description: Servicio operativo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Autentica al propietario y emite cookie HttpOnly cv_session
+      operationId: login
+      x-implemented: true
+      x-source: apps/web/src/app/api/auth/login/route.ts
+      x-rateLimit: "8 intentos por 15 minutos por IP y email"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Sesión iniciada; asigna cookie HttpOnly `cv_session` (HS256, 7 días)
+          headers:
+            Set-Cookie:
+              description: Cookie `cv_session=<jwt>; HttpOnly; SameSite=Lax; Path=/`
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUserResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: Credenciales inválidas
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+
+  /api/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Cierra la sesión actual eliminando la cookie cv_session
+      operationId: logout
+      x-implemented: true
+      x-source: apps/web/src/app/api/auth/logout/route.ts
+      responses:
+        "200":
+          description: Cookie de sesión eliminada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /api/auth/me:
+    get:
+      tags: [Auth]
+      summary: Obtiene el usuario autenticado actual desde la cookie cv_session
+      operationId: getCurrentUser
+      x-implemented: true
+      x-source: apps/web/src/app/api/auth/me/route.ts
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Sesión válida
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUserResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/contact:
+    post:
+      tags: [Public]
+      summary: Envía un mensaje público hacia el perfil principal
+      operationId: sendContactMessage
+      x-implemented: true
+      x-source: apps/web/src/app/api/contact/route.ts
+      x-rateLimit: "5 peticiones por 10 minutos por IP"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactMessageInput"
+      responses:
+        "201":
+          description: Mensaje registrado (o descartado silenciosamente si `websiteHoneypot` no está vacío)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          description: No hay perfil activo configurado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+
+  /api/assets/{id}:
+    get:
+      tags: [Public]
+      summary: Entrega controlada de un activo binario (PDF de certificación u otro recurso custodiado)
+      operationId: getAssetById
+      x-implemented: true
+      x-source: apps/web/src/app/api/assets/[id]/route.ts
+      parameters:
+        - $ref: "#/components/parameters/ResourceId"
+        - name: download
+          in: query
+          required: false
+          description: Si vale `"1"` y `allowDownload` o propiedad lo permiten, responde como `attachment`
+          schema:
+            type: string
+            enum: ["1"]
+      responses:
+        "200":
+          description: Flujo binario del archivo custodiado
+          headers:
+            Content-Disposition:
+              description: "`inline; filename=...` o `attachment; filename=...`"
+              schema:
+                type: string
+            X-Content-Type-Options:
+              description: "`nosniff`"
+              schema:
+                type: string
+            Cache-Control:
+              description: "`private, max-age=3600`"
+              schema:
+                type: string
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "403":
+          description: Activo privado y solicitante no propietario
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/admin/profile:
+    get:
+      tags: [Admin Profile]
+      summary: Obtiene el perfil principal del usuario autenticado
+      operationId: getAdminProfile
+      x-implemented: true
+      x-source: apps/web/src/app/api/admin/profile/route.ts
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Datos del perfil
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [profile]
+                properties:
+                  profile:
+                    $ref: "#/components/schemas/Profile"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      tags: [Admin Profile]
+      summary: Actualiza slug, idioma base, información localizada y enlaces sociales del perfil
+      operationId: updateAdminProfile
+      x-implemented: true
+      x-source: apps/web/src/app/api/admin/profile/route.ts
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdateRequest"
+      responses:
+        "200":
+          description: Perfil actualizado
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [profile]
+                properties:
+                  profile:
+                    $ref: "#/components/schemas/Profile"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: El slug público ya está en uso por otro perfil
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/admin/experiences:
+    get:
+      tags: [Admin Career]
+      summary: Lista experiencias laborales del perfil autenticado
+      operationId: listExperiences
+      x-implemented: true
+      x-source: apps/web/src/app/api/admin/experiences/route.ts
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Lista ordenada por sortOrder y startDate descendente
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Experience"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      tags: [Admin Career]
+      summary: Crea una nueva experiencia laboral
+      operationId: createExperience
+      x-implemented: true
+      x-source: apps/web/src/app/api/admin/experiences/route.ts
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExperienceInput"
+      responses:
+        "201":
+          description: Experiencia creada
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [item]
+                properties:
+                  item:
+                    $ref: "#/components/schemas/Experience"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/admin/experiences/{id}:
+    patch:
+      tags: [Admin Career]
+      summary: Actualiza una experiencia laboral perteneciente al perfil autenticado
+      operationId: updateExperience
+      x-implemented: true
+      x-source: apps/web/src/app/api/admin/experiences/[id]/route.ts
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ResourceId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExperienceInput"
+      responses:
+        "200":
+          description: Experiencia actualizada
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [item]
+                properties:
+                  item:
+                    $ref: "#/components/schemas/Experience"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags: [Admin Career]
+      summary: Elimina una experiencia laboral del perfil autenticado
+      operationId: deleteExperience
+      x-implemented: true
+      x-source: apps/web/src/app/api/admin/experiences/[id]/route.ts
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ResourceId"
+      responses:
+        "200":
+          description: Experiencia eliminada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/admin/educations:
+    get:
+      tags: [Admin Career]
+      summary: Lista registros académicos del perfil autenticado
+      operationId: listEducations
+      x-implemented: true
+      x-source: apps/web/src/app/api/admin/educations/route.ts
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Lista ordenada por sortOrder y startDate descendente
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Education"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      tags: [Admin Career]
+      summary: Crea un registro académico
+      operationId: createEducation
+      x-implemented: true
+      x-source: apps/web/src/app/api/admin/educations/route.ts
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EducationInput"
+      responses:
+        "201":
+          description: Registro académico creado
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [item]
+                properties:
+                  item:
+                    $ref: "#/components/schemas/Education"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/admin/educations/{id}:
+    patch:
+      tags: [Admin Career]
+      summary: Actualiza un registro académico
+      operationId: updateEducation
+      x-implemented: true
+      x-source: apps/web/src/app/api/admin/educations/[id]/route.ts
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ResourceId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EducationInput"
+      responses:
+        "200":
+          description: Registro actualizado
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [item]
+                properties:
+                  item:
+                    $ref: "#/components/schemas/Education"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags: [Admin Career]
+      summary: Elimina un registro académico
+      operationId: deleteEducation
+      x-implemented: true
+      x-source: apps/web/src/app/api/admin/educations/[id]/route.ts
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ResourceId"
+      responses:
+        "200":
+          description: Registro eliminado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/admin/projects:
+    get:
+      tags: [Admin Career]
+      summary: Lista proyectos del portafolio
+      operationId: listProjects
+      x-implemented: true
+      x-source: apps/web/src/app/api/admin/projects/route.ts
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Lista ordenada por sortOrder y createdAt descendente
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Project"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      tags: [Admin Career]
+      summary: Crea un proyecto en el portafolio
+      operationId: createProject
+      x-implemented: true
+      x-source: apps/web/src/app/api/admin/projects/route.ts
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectInput"
+      responses:
+        "201":
+          description: Proyecto creado
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [item]
+                properties:
+                  item:
+                    $ref: "#/components/schemas/Project"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/admin/projects/{id}:
+    patch:
+      tags: [Admin Career]
+      summary: Actualiza un proyecto del portafolio
+      operationId: updateProject
+      x-implemented: true
+      x-source: apps/web/src/app/api/admin/projects/[id]/route.ts
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ResourceId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectInput"
+      responses:
+        "200":
+          description: Proyecto actualizado
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [item]
+                properties:
+                  item:
+                    $ref: "#/components/schemas/Project"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags: [Admin Career]
+      summary: Elimina un proyecto del portafolio
+      operationId: deleteProject
+      x-implemented: true
+      x-source: apps/web/src/app/api/admin/projects/[id]/route.ts
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ResourceId"
+      responses:
+        "200":
+          description: Proyecto eliminado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/admin/skills:
+    get:
+      tags: [Admin Career]
+      summary: Lista habilidades técnicas agrupadas
+      operationId: listSkills
+      x-implemented: true
+      x-source: apps/web/src/app/api/admin/skills/route.ts
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Lista ordenada por category, sortOrder y name
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Skill"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      tags: [Admin Career]
+      summary: Crea una nueva habilidad técnica
+      operationId: createSkill
+      x-implemented: true
+      x-source: apps/web/src/app/api/admin/skills/route.ts
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SkillInput"
+      responses:
+        "201":
+          description: Habilidad creada
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [item]
+                properties:
+                  item:
+                    $ref: "#/components/schemas/Skill"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/admin/skills/{id}:
+    patch:
+      tags: [Admin Career]
+      summary: Actualiza una habilidad técnica
+      operationId: updateSkill
+      x-implemented: true
+      x-source: apps/web/src/app/api/admin/skills/[id]/route.ts
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ResourceId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SkillInput"
+      responses:
+        "200":
+          description: Habilidad actualizada
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [item]
+                properties:
+                  item:
+                    $ref: "#/components/schemas/Skill"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags: [Admin Career]
+      summary: Elimina una habilidad técnica
+      operationId: deleteSkill
+      x-implemented: true
+      x-source: apps/web/src/app/api/admin/skills/[id]/route.ts
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ResourceId"
+      responses:
+        "200":
+          description: Habilidad eliminada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/admin/certifications:
+    get:
+      tags: [Admin Certifications]
+      summary: Lista certificaciones del perfil incluyendo resumen del archivo PDF asociado
+      operationId: listCertifications
+      x-implemented: true
+      x-source: apps/web/src/app/api/admin/certifications/route.ts
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Lista ordenada por sortOrder e issueDate descendente
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Certification"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      tags: [Admin Certifications]
+      summary: Crea una certificación validando metadatos y archivo PDF opcional por magic bytes
+      operationId: createCertification
+      x-implemented: true
+      x-source: apps/web/src/app/api/admin/certifications/route.ts
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [metadata]
+              properties:
+                metadata:
+                  type: string
+                  description: JSON serializado conforme a `CertificationMetadataInput`
+                file:
+                  type: string
+                  format: binary
+                  description: Documento PDF válido (`%PDF-`, MIME `application/pdf`, máx. `MAX_PDF_SIZE_MB`)
+      responses:
+        "201":
+          description: Certificación (y opcionalmente `FileAsset`) creados transaccionalmente
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [item]
+                properties:
+                  item:
+                    $ref: "#/components/schemas/Certification"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/admin/certifications/{id}:
+    patch:
+      tags: [Admin Certifications]
+      summary: Actualiza metadatos bilingües y permisos de una certificación existente
+      operationId: updateCertification
+      x-implemented: true
+      x-source: apps/web/src/app/api/admin/certifications/[id]/route.ts
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ResourceId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CertificationMetadataInput"
+      responses:
+        "200":
+          description: Certificación actualizada
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [item]
+                properties:
+                  item:
+                    $ref: "#/components/schemas/Certification"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags: [Admin Certifications]
+      summary: Elimina la certificación, su FileAsset en PostgreSQL y el binario físico en StorageProvider
+      operationId: deleteCertification
+      x-implemented: true
+      x-source: apps/web/src/app/api/admin/certifications/[id]/route.ts
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ResourceId"
+      responses:
+        "200":
+          description: Certificación y binario eliminados
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/admin/messages:
+    get:
+      tags: [Admin Messages]
+      summary: Lista mensajes de contacto recibidos por el perfil autenticado
+      operationId: listContactMessages
+      x-implemented: true
+      x-source: apps/web/src/app/api/admin/messages/route.ts
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Lista ordenada por no leídos primero y createdAt descendente
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ContactMessage"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/admin/messages/{id}:
+    patch:
+      tags: [Admin Messages]
+      summary: Marca un mensaje como leído o no leído
+      operationId: markContactMessageRead
+      x-implemented: true
+      x-source: apps/web/src/app/api/admin/messages/[id]/route.ts
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ResourceId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MessageMarkReadInput"
+      responses:
+        "200":
+          description: Estado actualizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags: [Admin Messages]
+      summary: Elimina un mensaje de contacto
+      operationId: deleteContactMessage
+      x-implemented: true
+      x-source: apps/web/src/app/api/admin/messages/[id]/route.ts
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ResourceId"
+      responses:
+        "200":
+          description: Mensaje eliminado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/admin/layout:
+    get:
+      tags: [Studio Layout]
+      summary: Obtiene borrador actual, versión publicada e historial reciente (hasta 10 versiones)
+      operationId: getStudioLayout
+      x-implemented: true
+      x-source: apps/web/src/app/api/admin/layout/route.ts
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Estado editorial del lienzo Studio
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LayoutGetResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    put:
+      tags: [Studio Layout]
+      summary: Guarda cambios en DRAFT y opcionalmente publica una nueva versión archivando la anterior
+      operationId: saveStudioLayout
+      x-implemented: true
+      x-source: apps/web/src/app/api/admin/layout/route.ts
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LayoutSaveRequest"
+      responses:
+        "200":
+          description: Borrador (y publicación si `publish=true`) guardados transaccionalmente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LayoutSaveResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/admin/assets:
+    post:
+      tags: [Planned (Fase 2-3)]
+      summary: "[PLANIFICADO Fase 2] Subida de fuentes personalizadas (.woff2/.ttf/.otf), imágenes o código"
+      operationId: uploadAdminAsset
+      x-implemented: false
+      x-phase: 2
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [kind, file]
+              properties:
+                kind:
+                  type: string
+                  enum: [IMAGE, FONT, CODE_BUNDLE, OTHER]
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "201":
+          description: Activo validado y almacenado en `file_assets`
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [asset]
+                properties:
+                  asset:
+                    $ref: "#/components/schemas/CertificationFileSummary"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/export/pdf:
+    get:
+      tags: [Planned (Fase 2-3)]
+      summary: "[PLANIFICADO Fase 3] Exporta el CV en formato PDF ATS-friendly independiente del lienzo visual"
+      operationId: exportAtsPdf
+      x-implemented: false
+      x-phase: 3
+      parameters:
+        - name: locale
+          in: query
+          required: false
+          description: Idioma de generación del documento ATS
+          schema:
+            type: string
+            enum: [es, en]
+            default: es
+      responses:
+        "200":
+          description: Documento PDF monocromático legible por ATS
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: cv_session
+      description: Token JWT HS256 firmado con `AUTH_SECRET` y emitido por `POST /api/auth/login`
+
+  parameters:
+    ResourceId:
+      name: id
+      in: path
+      required: true
+      description: Identificador UUID del recurso
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+    ValidationError:
+      description: Error de sintaxis JSON o validación Zod de entrada
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationErrorResponse"
+    Unauthorized:
+      description: Cookie de sesión ausente, expirada o inválida
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: Recurso inexistente o no perteneciente al perfil autenticado
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    RateLimited:
+      description: Límite de frecuencia superado
+      headers:
+        Retry-After:
+          description: Segundos sugeridos antes de reintentar
+          schema:
+            type: string
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+  schemas:
+    OkResponse:
+      type: object
+      required: [ok]
+      properties:
+        ok:
+          type: boolean
+          const: true
+
+    HealthResponse:
+      type: object
+      required: [status, service, timestamp]
+      properties:
+        status:
+          type: string
+          example: ok
+        service:
+          type: string
+          example: proyecto-cv
+        timestamp:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+    ValidationErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+        details:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+
+    LocalizedText:
+      type: object
+      description: Debe incluir texto no vacío en al menos `es` o `en`
+      properties:
+        es:
+          type: string
+          maxLength: 4000
+        en:
+          type: string
+          maxLength: 4000
+
+    OptionalLocalizedText:
+      type: object
+      properties:
+        es:
+          type: string
+          maxLength: 4000
+        en:
+          type: string
+          maxLength: 4000
+
+    LocalizedList:
+      type: object
+      properties:
+        es:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 300
+        en:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 300
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
+
+    SessionUser:
+      type: object
+      required: [id, email, name, role]
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        role:
+          type: string
+          enum: [OWNER, USER, ADMIN]
+
+    AuthUserResponse:
+      type: object
+      required: [user]
+      properties:
+        user:
+          $ref: "#/components/schemas/SessionUser"
+
+    ProfileUpdateRequest:
+      type: object
+      required: [slug, localizedInfo, socialLinks]
+      properties:
+        slug:
+          type: string
+          minLength: 2
+          maxLength: 64
+          pattern: "^[a-z0-9-]+$"
+        defaultLocale:
+          type: string
+          enum: [es, en]
+          default: es
+        localizedInfo:
+          type: object
+          required: [fullName, headline, bio]
+          properties:
+            fullName:
+              type: string
+              minLength: 2
+              maxLength: 120
+            headline:
+              $ref: "#/components/schemas/LocalizedText"
+            bio:
+              $ref: "#/components/schemas/OptionalLocalizedText"
+            location:
+              type: string
+              maxLength: 120
+            availabilityBadge:
+              $ref: "#/components/schemas/OptionalLocalizedText"
+            publicEmail:
+              type: string
+        socialLinks:
+          type: object
+          properties:
+            linkedin:
+              type: string
+            github:
+              type: string
+            website:
+              type: string
+            x:
+              type: string
+
+    Profile:
+      type: object
+      required: [id, userId, slug, isPrimary, defaultLocale, localizedInfo, socialLinks, themeConfig]
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        slug:
+          type: string
+        isPrimary:
+          type: boolean
+        defaultLocale:
+          type: string
+          enum: [es, en]
+        localizedInfo:
+          type: object
+          additionalProperties: true
+        socialLinks:
+          type: object
+          additionalProperties: true
+        themeConfig:
+          type: object
+          additionalProperties: true
+        avatarAssetId:
+          type: ["string", "null"]
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ExperienceInput:
+      type: object
+      required: [company, roleI18n, startDate]
+      properties:
+        company:
+          type: string
+          minLength: 1
+          maxLength: 140
+        location:
+          type: string
+          maxLength: 120
+        roleI18n:
+          $ref: "#/components/schemas/LocalizedText"
+        summaryI18n:
+          $ref: "#/components/schemas/OptionalLocalizedText"
+        highlightsI18n:
+          $ref: "#/components/schemas/LocalizedList"
+        tags:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+            minLength: 1
+            maxLength: 40
+        startDate:
+          type: string
+          pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+        endDate:
+          type: ["string", "null"]
+          pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+        isCurrent:
+          type: boolean
+          default: false
+        sortOrder:
+          type: integer
+          minimum: 0
+          maximum: 9999
+          default: 0
+        isVisible:
+          type: boolean
+          default: true
+
+    Experience:
+      allOf:
+        - $ref: "#/components/schemas/ExperienceInput"
+        - type: object
+          required: [id, profileId]
+          properties:
+            id:
+              type: string
+              format: uuid
+            profileId:
+              type: string
+              format: uuid
+            location:
+              type: ["string", "null"]
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+
+    EducationInput:
+      type: object
+      required: [institution, degreeI18n, startDate]
+      properties:
+        institution:
+          type: string
+          minLength: 1
+          maxLength: 160
+        location:
+          type: string
+          maxLength: 120
+        degreeI18n:
+          $ref: "#/components/schemas/LocalizedText"
+        summaryI18n:
+          $ref: "#/components/schemas/OptionalLocalizedText"
+        startDate:
+          type: string
+          pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+        endDate:
+          type: ["string", "null"]
+          pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+        isCurrent:
+          type: boolean
+          default: false
+        sortOrder:
+          type: integer
+          minimum: 0
+          maximum: 9999
+          default: 0
+        isVisible:
+          type: boolean
+          default: true
+
+    Education:
+      allOf:
+        - $ref: "#/components/schemas/EducationInput"
+        - type: object
+          required: [id, profileId]
+          properties:
+            id:
+              type: string
+              format: uuid
+            profileId:
+              type: string
+              format: uuid
+            location:
+              type: ["string", "null"]
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+
+    ProjectInput:
+      type: object
+      required: [titleI18n]
+      properties:
+        titleI18n:
+          $ref: "#/components/schemas/LocalizedText"
+        summaryI18n:
+          $ref: "#/components/schemas/OptionalLocalizedText"
+        tags:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+            minLength: 1
+            maxLength: 40
+        demoUrl:
+          type: string
+        repoUrl:
+          type: string
+        year:
+          type: ["integer", "null"]
+          minimum: 1990
+          maximum: 2100
+        isFeatured:
+          type: boolean
+          default: false
+        sortOrder:
+          type: integer
+          minimum: 0
+          maximum: 9999
+          default: 0
+        isVisible:
+          type: boolean
+          default: true
+
+    Project:
+      allOf:
+        - $ref: "#/components/schemas/ProjectInput"
+        - type: object
+          required: [id, profileId]
+          properties:
+            id:
+              type: string
+              format: uuid
+            profileId:
+              type: string
+              format: uuid
+            demoUrl:
+              type: ["string", "null"]
+            repoUrl:
+              type: ["string", "null"]
+            coverAssetId:
+              type: ["string", "null"]
+              format: uuid
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+
+    SkillInput:
+      type: object
+      required: [name, category]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+        category:
+          type: string
+          minLength: 1
+          maxLength: 60
+        level:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 80
+        years:
+          type: ["number", "null"]
+          minimum: 0
+          maximum: 60
+        sortOrder:
+          type: integer
+          minimum: 0
+          maximum: 9999
+          default: 0
+        isVisible:
+          type: boolean
+          default: true
+
+    Skill:
+      allOf:
+        - $ref: "#/components/schemas/SkillInput"
+        - type: object
+          required: [id, profileId]
+          properties:
+            id:
+              type: string
+              format: uuid
+            profileId:
+              type: string
+              format: uuid
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+
+    CertificationMetadataInput:
+      type: object
+      required: [titleI18n, issuer, issueDate, category]
+      properties:
+        titleI18n:
+          $ref: "#/components/schemas/LocalizedText"
+        issuer:
+          type: string
+          minLength: 1
+          maxLength: 140
+        issueDate:
+          type: string
+          pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+        expiryDate:
+          type: ["string", "null"]
+          pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+        category:
+          type: string
+          minLength: 1
+          maxLength: 80
+        credentialId:
+          type: string
+          maxLength: 120
+        verifyUrl:
+          type: string
+        skills:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+            minLength: 1
+            maxLength: 40
+        allowDownload:
+          type: boolean
+          default: true
+        sortOrder:
+          type: integer
+          minimum: 0
+          maximum: 9999
+          default: 0
+        isVisible:
+          type: boolean
+          default: true
+
+    CertificationFileSummary:
+      type: object
+      required: [id, originalName, sizeBytes, mimeType]
+      properties:
+        id:
+          type: string
+          format: uuid
+        originalName:
+          type: string
+        sizeBytes:
+          type: integer
+        mimeType:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    Certification:
+      type: object
+      required: [id, profileId, titleI18n, issuer, issueDate, category, allowDownload, isVisible]
+      properties:
+        id:
+          type: string
+          format: uuid
+        profileId:
+          type: string
+          format: uuid
+        fileAssetId:
+          type: ["string", "null"]
+          format: uuid
+        titleI18n:
+          $ref: "#/components/schemas/LocalizedText"
+        issuer:
+          type: string
+        issueDate:
+          type: string
+          format: date-time
+        expiryDate:
+          type: ["string", "null"]
+          format: date-time
+        category:
+          type: string
+        credentialId:
+          type: ["string", "null"]
+        verifyUrl:
+          type: ["string", "null"]
+        skills:
+          type: array
+          items:
+            type: string
+        allowDownload:
+          type: boolean
+        sortOrder:
+          type: integer
+        isVisible:
+          type: boolean
+        fileAsset:
+          oneOf:
+            - $ref: "#/components/schemas/CertificationFileSummary"
+            - type: "null"
+
+    ContactMessageInput:
+      type: object
+      required: [senderName, senderEmail, subject, message]
+      properties:
+        senderName:
+          type: string
+          minLength: 2
+          maxLength: 120
+        senderEmail:
+          type: string
+          format: email
+          maxLength: 160
+        company:
+          type: string
+          maxLength: 120
+        subject:
+          type: string
+          minLength: 2
+          maxLength: 160
+        message:
+          type: string
+          minLength: 10
+          maxLength: 4000
+        websiteHoneypot:
+          type: string
+          description: Campo trampa oculto anti-bots; si contiene texto se descarta con HTTP 201 silencioso
+
+    ContactMessage:
+      type: object
+      required: [id, profileId, senderName, senderEmail, subject, message, isRead, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        profileId:
+          type: string
+          format: uuid
+        senderName:
+          type: string
+        senderEmail:
+          type: string
+          format: email
+        company:
+          type: ["string", "null"]
+        subject:
+          type: string
+        message:
+          type: string
+        isRead:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    MessageMarkReadInput:
+      type: object
+      required: [isRead]
+      properties:
+        isRead:
+          type: boolean
+
+    CanvasNodeType:
+      type: string
+      enum:
+        - free_text
+        - free_image
+        - free_card
+        - free_button
+        - free_badge
+        - free_divider
+        - custom_code
+        - widget_hero
+        - widget_timeline
+        - widget_projects
+        - widget_skills
+        - widget_certifications
+        - widget_cert_spotlight
+        - widget_contact
+        - widget_controls
+
+    DesktopFrame:
+      type: object
+      required: [x, y, w, h, zIndex]
+      properties:
+        x:
+          type: number
+          minimum: 0
+          maximum: 5000
+        y:
+          type: number
+          minimum: 0
+          maximum: 20000
+        w:
+          type: number
+          minimum: 40
+          maximum: 2400
+        h:
+          type: number
+          minimum: 24
+          maximum: 4000
+        zIndex:
+          type: integer
+          minimum: 0
+          maximum: 999
+
+    MobileLayout:
+      type: object
+      required: [order]
+      properties:
+        order:
+          type: integer
+          minimum: 0
+          maximum: 9999
+        visible:
+          type: boolean
+          default: true
+
+    NodeStyle:
+      type: object
+      properties:
+        backgroundColor:
+          type: string
+          maxLength: 40
+        textColor:
+          type: string
+          maxLength: 40
+        borderRadius:
+          type: number
+          minimum: 0
+          maximum: 120
+        padding:
+          type: number
+          minimum: 0
+          maximum: 120
+        shadow:
+          type: string
+          enum: [none, sm, md, lg]
+        animation:
+          type: string
+          enum: [none, fade-up, fade-in, scale-in]
+
+    CanvasNode:
+      type: object
+      required: [id, type, label, desktop, mobile]
+      properties:
+        id:
+          type: string
+          minLength: 1
+          maxLength: 80
+        type:
+          $ref: "#/components/schemas/CanvasNodeType"
+        label:
+          type: string
+          minLength: 1
+          maxLength: 120
+        desktop:
+          $ref: "#/components/schemas/DesktopFrame"
+        mobile:
+          $ref: "#/components/schemas/MobileLayout"
+        style:
+          $ref: "#/components/schemas/NodeStyle"
+        props:
+          type: object
+          additionalProperties: true
+
+    CanvasSettings:
+      type: object
+      properties:
+        desktopWidth:
+          type: integer
+          minimum: 800
+          maximum: 1920
+          default: 1200
+        minHeight:
+          type: integer
+          minimum: 600
+          maximum: 20000
+          default: 1400
+        gridSize:
+          type: integer
+          minimum: 1
+          maximum: 64
+          default: 8
+        snapToGrid:
+          type: boolean
+          default: true
+
+    CanvasSchemaV1:
+      type: object
+      required: [version, canvasSettings, nodes]
+      properties:
+        version:
+          type: integer
+          const: 1
+        canvasSettings:
+          $ref: "#/components/schemas/CanvasSettings"
+        nodes:
+          type: array
+          maxItems: 200
+          items:
+            $ref: "#/components/schemas/CanvasNode"
+
+    LayoutHistoryItem:
+      type: object
+      required: [id, status, version, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [DRAFT, PUBLISHED, ARCHIVED]
+        version:
+          type: integer
+        publishedAt:
+          type: ["string", "null"]
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    LayoutRecord:
+      type: object
+      required: [status, version, canvasSchema]
+      properties:
+        id:
+          type: string
+          format: uuid
+        profileId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [DRAFT, PUBLISHED, ARCHIVED]
+        version:
+          type: integer
+        canvasSchema:
+          $ref: "#/components/schemas/CanvasSchemaV1"
+        publishedAt:
+          type: ["string", "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    LayoutGetResponse:
+      type: object
+      required: [draft, published, history]
+      properties:
+        draft:
+          $ref: "#/components/schemas/LayoutRecord"
+        published:
+          oneOf:
+            - $ref: "#/components/schemas/LayoutRecord"
+            - type: "null"
+        history:
+          type: array
+          items:
+            $ref: "#/components/schemas/LayoutHistoryItem"
+
+    LayoutSaveRequest:
+      type: object
+      required: [canvasSchema]
+      properties:
+        canvasSchema:
+          $ref: "#/components/schemas/CanvasSchemaV1"
+        publish:
+          type: boolean
+          default: false
+
+    LayoutSaveResponse:
+      type: object
+      required: [draft, published]
+      properties:
+        draft:
+          $ref: "#/components/schemas/LayoutRecord"
+        published:
+          oneOf:
+            - $ref: "#/components/schemas/LayoutRecord"
+            - type: "null"

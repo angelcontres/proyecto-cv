@@ -1,0 +1,54 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@web/*": ["./apps/web/src/*"],
+      "@cv/contracts": ["./packages/contracts/src/index.ts"],
+      "@cv/core": ["./packages/core/src/index.ts"],
+      "@cv/database": ["./packages/database/src/index.ts"],
+      "@cv/api-auth": ["./services/api-auth/src/index.ts"],
+      "@cv/api-auth/edge": ["./services/api-auth/src/edge.ts"],
+      "@cv/api-cv": ["./services/api-cv/src/index.ts"],
+      "@cv/api-certifications": ["./services/api-certifications/src/index.ts"],
+      "@cv/media-vault": ["./services/media-vault/src/index.ts"],
+      "@cv/api-studio": ["./services/api-studio/src/index.ts"],
+      "@cv/api-contact": ["./services/api-contact/src/index.ts"]
+    }
+  },
+  "include": [
+    "apps/**/*.ts",
+    "apps/**/*.tsx",
+    "services/**/*.ts",
+    "packages/**/*.ts",
+    "apps/web/next-env.d.ts",
+    "apps/web/.next/types/**/*.ts",
+    "apps/web/.next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/node_modules",
+    ".next",
+    "apps/web/.next"
+  ]
+}
